@@ -1,0 +1,67 @@
+.admin-navbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 15px;
+  background-color: #f8f8f8; /* Light background for better contrast */
+}
+
+.page-title {
+  text-align: center;
+  color: #2c3e50; /* Darker text color for contrast */
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.nav-item {
+  cursor: pointer; /* Change cursor to pointer for nav items */
+  color: #2980b9; /* Blue color for navigation items */
+  transition: color 0.3s; /* Smooth transition on hover */
+}
+
+.nav-item:hover {
+  color: #3498db; /* Lighter blue on hover */
+}
+
+.admincontainer {
+  min-height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.productContainer {
+  width: 70%;
+}
+
+.boxContainer {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  width: 30%;
+  background-color: #ffffff; /* White background for the box */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.boxContainer ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.boxContainer ul li {
+  font-size: 18px;
+  margin: 10px 0;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #ecf0f1; /* Light grey background for list items */
+  transition: background-color 0.3s; /* Smooth transition on hover */
+}
+
+.boxContainer ul li:hover {
+  background-color: #dfe6e9; /* Darker grey on hover */
+  cursor: pointer; /* Change cursor to pointer on hover */
+}

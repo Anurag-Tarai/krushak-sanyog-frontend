@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar but allow scrolling */
+html {
+  overflow-y: scroll; /* Allows vertical scrolling */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Hide scrollbar in webkit-based browsers */
+}
+
+/* Optional: if you want to apply overflow hidden to the body */
+body {
+  overflow-x: hidden; /* Prevent horizontal overflow */
+}
