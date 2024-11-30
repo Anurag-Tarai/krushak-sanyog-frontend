@@ -46,6 +46,10 @@ const Navbar = () => {
     navigate("/product"); // Navigate to the product page
   };
 
+  const handleAuctionProductClick = ()=>{
+    navigate("/auction");
+  }
+
   return (
     <nav className="navbar">
       <div className="logo">
@@ -59,6 +63,13 @@ const Navbar = () => {
       </div>
 
       <div className="iconbutton">
+      <button
+          style={iconstyle}
+          onClick={handleAuctionProductClick} // New button to explore products
+          className="explore-products-button bg-transparent"
+        >
+          Explore Auctions
+        </button>
         <button
           style={iconstyle}
           onClick={handleProductsClick} // New button to explore products
@@ -99,14 +110,6 @@ const Navbar = () => {
             >
               <FontAwesomeIcon icon={faUser} className="cart-icon" />
               Login
-            </button>
-            <button
-              className="iconbutton"
-              onClick={() => {
-                navigate("/register-user");
-              }}
-            >
-              SignIn
             </button>
           </>
         )}

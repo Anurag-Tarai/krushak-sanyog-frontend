@@ -14,7 +14,7 @@ const Product = () => {
 
   const navigate = useNavigate();
 
-  const filterProducts = (category, priceOrder, nameSearch, data) => {
+  const filterProducts = (category, priceOrder, nameSearch, data) =>{
     let filteredProducts = data;
 
     // Filter by category
@@ -60,6 +60,7 @@ const Product = () => {
       .post(`/ecom/cart/add-product?userId=${userid}&productId=${productid}`)
       .then((response) => {
         localStorage.setItem("cartid", response.data.cartId);
+        navigate("/user/cart");
         //alert("Product added to Cart");
       })
       .catch((error) => {
@@ -104,7 +105,7 @@ const Product = () => {
           <option value="dryFruits">Dry Fruits</option>
         </select>
 
-        <label className="block mt-4 text-gray-700">Price:</label>
+        {/* <label className="block mt-4 text-gray-700">Price:</label>
         <select
           value={priceOrder}
           onChange={(e) => {
@@ -115,12 +116,12 @@ const Product = () => {
           <option value="All">All</option>
           <option value="LowToHigh">Low to High</option>
           <option value="HighToLow">High To Low</option>
-        </select>
+        </select> */}
       </div>
 
       <div className="product-list w-full lg:w-3/4 p-4">
         <div className="mt-4">
-          <h4 className="font-bold">Search by Name / Category</h4>
+          <h4 className="font-bold">Search by Name / Category / Location</h4>
           <div className="flex justify-center mt-2">
             <input
               type="text"
@@ -149,10 +150,7 @@ const Product = () => {
                   <p className="text-gray-600">
                     <strong>Description:</strong> {product.description.length > 25 ? `${product.description.substring(0, 25)}...` : product.description}
                   </p>
-                  <h2 className="product-price text-lg font-bold text-green-600 mt-2">Price: ₹ {product.price}</h2>
-                  <p className="text-gray-500">
-                    <strong>Rating:</strong> {product.reviews.length === 0 ? "Not Available" : product.reviews[0].rating}
-                  </p>
+                  <h2 className="product-price text-lg font-bold text-green-600 mt-2">Available quantity: {product.price} kg</h2>
 
                   <div className="flex justify-between mt-4">
                     <button 
@@ -162,7 +160,7 @@ const Product = () => {
                     </button>
                     <Link to={`/product/${product.productId}`}>
                       <button className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600 transition shadow-md hover:shadow-lg">
-                        View
+                        See Details
                       </button>
                     </Link>
                   </div>

@@ -127,7 +127,7 @@ const AllProductAdmin = () => {
                       ? `${product.description.substring(0, 50)}...`
                       : product.description}
                   </p>
-                  <p className="text-green-800 font-semibold mt-2">Price: ₹ {product.price}</p>
+                  <p className="text-green-800 font-semibold mt-2">Available Quantity: {product.price} kg</p>
                   <div className="mt-4 flex justify-between">
                     <button
                       className="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all"

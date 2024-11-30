@@ -6,9 +6,9 @@ import Fruits from "../picture/category/fruits.webp";
 import DryFruits from "../picture/category/dry-fruits.webp";
 import Dairy from "../picture/category/dairy.jpeg";
 import HerbSpices from "../picture/category/indian-spices.webp";
-import Farmer1 from "../picture/farmer/best.jpg";
-import Farmer2 from "../picture/farmer/best1.jpg";
-import Farmer3 from "../picture/farmer/best2.jpg";
+import Farmer1 from "../picture/farmer/best2.jpg";
+import Farmer2 from "../picture/farmer/best.jpg";
+import Farmer3 from "../picture/farmer/tim-mossholder-xDwEa2kaeJA-unsplash.jpg";
 
 const Home = () => {
   const categories = [
@@ -21,12 +21,7 @@ const Home = () => {
 
   const slideImages = [Farmer1, Farmer2, Farmer3];
 
-  useEffect(() => {
-    document.title = "Ecommerce | Home Page";
-    return () => {
-      document.title = "Ecommerce App";
-    };
-  }, []);
+
 
   return (
     <div className="bg-gray-50 p-4 lg:p-10 rounded-lg shadow-lg">
@@ -35,7 +30,7 @@ const Home = () => {
         <Slider images={slideImages} interval={5000} />
 
         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white">
-          <h2 className="text-3xl lg:text-4xl font-bold">Fresh Products Delivered</h2>
+          <h2 className="text-3xl lg:text-4xl font-bold">Farming Feeds Nations.</h2>
         </div>
       </div>
 

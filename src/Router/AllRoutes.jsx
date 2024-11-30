@@ -16,6 +16,8 @@ import { Privateroute,Privaterouteadmin } from "../Router/ProtectedRoute";
 import Admin from "../pages/Admin";
 import NotFound from "../components/NotFound";
 import FarmerRegistration from "../pages/auth/FarmerRegistration";
+import AuctionProducts from "../pages/AuctionProducts";
+import AuctionPage from "../pages/AuctionPage";
 
 const AllRoutes = () => {
   return (
@@ -24,6 +26,8 @@ const AllRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/product" element={<Product />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auction" element={<AuctionProducts />}/>
+        <Route path="/auction-page" element={<AuctionPage />}/>
 
         <Route path="/user" element={<Privateroute />}>
           <Route path="cart" element={<Cart />} />

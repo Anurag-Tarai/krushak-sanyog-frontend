@@ -31,7 +31,15 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+  
+    // Length validation for name and description fields
 
+  
+    if (product.description.length < 10 || product.description.length > 50) {
+      setError("Description must be between 10 and 50 characters.");
+      return;
+    }
+  
     try {
       const response = await api.post("/ecom/products/add", product);
       console.log("Product added successfully:", response.data);
@@ -50,6 +58,7 @@ const AddProduct = () => {
       console.error("Error adding product:", error.response?.data);
     }
   };
+  
 
   return (
     <div className="bg-gray-100 p-6 rounded-lg shadow-lg">
