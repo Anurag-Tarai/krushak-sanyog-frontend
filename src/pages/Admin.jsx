@@ -6,10 +6,13 @@ import AllProductAdmin from "../components/AllProductAdmin";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import QNAPage from "./QnApage";  // Import the QNAPage
+import ChatBoxPage from "./ChatBoxPage"; // Import ChatBoxPage component for live chat
 
 const Admin = () => {
   const [selectedComponent, setSelectedComponent] = useState("all-products");
   const [userName, setUserName] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState(null);  // Store selected session ID for live chat
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +30,11 @@ const Admin = () => {
         return <AddCustomerAdmin />;
       case "create-auction":
         return <div>Create Auction Session Component</div>;
+      case "QNA-page":
+        return <QNAPage onSessionClick={handleSessionClick} />;
+      case "chat-session":
+        // If chat session is selected, render the ChatBoxPage with selected sessionId
+        return <ChatBoxPage productId={selectedSessionId} />;
       case "all-products":
       default:
         return <AllProductAdmin />;
@@ -38,7 +46,11 @@ const Admin = () => {
     localStorage.removeItem("jwtToken");
     localStorage.removeItem("name");
     navigate("/");
-    // alert("Logout Successful");
+  };
+
+  const handleSessionClick = (sessionId) => {
+    setSelectedSessionId(sessionId);  // Set the session ID for live chat
+    setSelectedComponent("chat-session");  // Change component to chat session
   };
 
   return (
@@ -72,6 +84,7 @@ const Admin = () => {
               { name: "View All Orders", value: "all-orders" },
               { name: "View All Customers", value: "add-customer" },
               { name: "Create Auction Session", value: "create-auction" },
+              { name: "Live QNA?", value: "QNA-page" },  // The button to access QNA page
             ].map((item) => (
               <li
                 key={item.value}
