@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import api from "../Router/api";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import api from "../Router/api";
+import { GOOGLE_MAP_API } from "../api";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -11,8 +13,13 @@ const AddProduct = () => {
     price: 0,
     category: "",
     available: true,
+    latitude: "",  // Add latitude
+    longitude: "",
+    address: "",  // Add address
+    farmer_id: "" // Add farmer_id to the product state
   });
 
+  
   const [error, setError] = useState(null);
 
   const categories = [
@@ -23,25 +30,51 @@ const AddProduct = () => {
     { name: "Dry Fruits", value: "dryFruits" }
   ];
 
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: GOOGLE_MAP_API, // Use your Google Maps API Key
+    libraries: ["places"],
+  });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProduct({ ...product, [name]: value });
   };
 
+  const handleMapClick = useCallback((e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    setProduct((prevProduct) => ({
+      ...prevProduct,
+      latitude: lat,
+      longitude: lng,
+    }));
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-  
-    // Length validation for name and description fields
 
-  
-    if (product.description.length < 10 || product.description.length > 50) {
-      setError("Description must be between 10 and 50 characters.");
+    // Length validation for description
+    if (product.description.length < 30 || product.description.length > 100) {
+      setError("Description must be between 30 and 100 characters.");
       return;
     }
-  
+
+    // Extract the farmerId from localStorage
+    const userId = localStorage.getItem("adminid");
+    if (!userId) {
+      setError("User ID not found.");
+      return;
+    }
+
+    // Include the farmer_id in the product data
+    const productWithFarmerId = {
+      ...product,
+      farmer_id: userId,
+    };
+
     try {
-      const response = await api.post("/ecom/products/add", product);
+      const response = await api.post("/ecom/products/add", productWithFarmerId);
       console.log("Product added successfully:", response.data);
       setProduct({
         name: "",
@@ -50,6 +83,10 @@ const AddProduct = () => {
         price: 0,
         category: "",
         available: true,
+        latitude: "",
+        longitude: "",
+        address: "",
+        farmer_id: "", // Reset farmer_id
       });
       alert("Product Added Successfully!");
       navigate("/admin/admin");
@@ -58,7 +95,6 @@ const AddProduct = () => {
       console.error("Error adding product:", error.response?.data);
     }
   };
-  
 
   return (
     <div className="bg-gray-100 p-6 rounded-lg shadow-lg">
@@ -113,7 +149,7 @@ const AddProduct = () => {
 
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-            Price per kg
+            Available Quantity
           </label>
           <input
             type="number"
@@ -147,6 +183,41 @@ const AddProduct = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+            Address
+          </label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            value={product.address}
+            onChange={handleChange}
+            className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter address"
+            required
+          />
+        </div>
+
+        {/* Google Map Location Picker */}
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700">Product Location</label>
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ height: "400px", width: "100%" }}
+              zoom={10}
+              center={{ lat: 20.5937, lng: 78.9629 }} // Default to India
+              onClick={handleMapClick}
+            >
+              {product.latitude && product.longitude && (
+                <Marker position={{ lat: product.latitude, lng: product.longitude }} />
+              )}
+            </GoogleMap>
+          ) : (
+            <p>Loading map...</p>
+          )}
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
