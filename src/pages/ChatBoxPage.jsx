@@ -28,7 +28,7 @@ const ChatBoxPage = ({ productId }) => {
 
     const interval = setInterval(() => {
       fetchMessages();
-    }, 10); 
+    }, 2000); 
 
     fetchMessages();
     return () => clearInterval(interval);

@@ -63,13 +63,13 @@ const Navbar = () => {
       </div>
 
       <div className="iconbutton">
-      <button
+      {/* <button
           style={iconstyle}
           onClick={handleAuctionProductClick} // New button to explore products
           className="explore-products-button bg-transparent"
         >
           Explore Auctions
-        </button>
+        </button> */}
         <button
           style={iconstyle}
           onClick={handleProductsClick} // New button to explore products
@@ -93,7 +93,7 @@ const Navbar = () => {
               style={iconstyle}
               className="login-button"
               onClick={() => {
-                navigate("/user/order-details");
+                navigate("/user/profile");
               }}
             >
               <FontAwesomeIcon icon={faUser} className="cart-icon" />

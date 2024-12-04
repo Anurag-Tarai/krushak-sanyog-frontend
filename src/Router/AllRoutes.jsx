@@ -2,7 +2,7 @@ import React from "react";
 import Home from "../pages/Home";
 import Product from "../pages/Product";
 import Profile from "../components/Profile";
-import OrderDetails from "../pages/OrderDetails";
+import OrderDetails from "../pages/UserProfile";
 import Payment from "../pages/Payment";
 import PaymentForm from "../pages/PaymentForm";
 import Login from "../pages/LogIn";
@@ -18,6 +18,7 @@ import NotFound from "../components/NotFound";
 import FarmerRegistration from "../pages/auth/FarmerRegistration";
 import AuctionProducts from "../pages/AuctionProducts";
 import AuctionPage from "../pages/AuctionPage";
+import UserProfile from "../pages/UserProfile";
 
 const AllRoutes = () => {
   return (
@@ -32,14 +33,14 @@ const AllRoutes = () => {
         <Route path="/user" element={<Privateroute />}>
           <Route path="cart" element={<Cart />} />
           <Route path="save-address" element={<ShippingDetails />} />
-          <Route path="order-details" element={<OrderDetails />} />
+          <Route path="profile" element={<UserProfile />} />
           <Route path="payment-success" element={<Payment />} />
           <Route path="make-payment" element={<PaymentForm />} />
           <Route path="profile/:userid" element={<Profile />} />
         </Route>
 
-        <Route path="/admin" element={<Privaterouteadmin />}>
-          <Route path="admin" element={<Admin />} />
+        <Route path="/farmer" element={<Privaterouteadmin />}>
+          <Route path="dashboard" element={<Admin />} />
         </Route>
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register-user" element={<Registration />} />

@@ -50,7 +50,7 @@ const QNAPage = ({ onSessionClick }) => {  // Accept onSessionClick as a prop
               {/* Additional session details */}
               <div className="text-sm text-gray-600 mt-2">
                 <p><strong>Category:</strong> {session.category}</p>
-                <p><strong>Price:</strong> ${session.price}</p>
+                <p><strong>Available Quantity:</strong>{session.price} kg</p>
               </div>
             </div>
           </div>

@@ -1,137 +1,101 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import api from "../Router/api";
-import "../comp_css/Cart.css";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const navigate = useNavigate();
   const [cartData, setCartData] = useState({});
-  const [totalAmount, setTotalAmount] = useState(0);
-  let cartId = localStorage.getItem("cartid");
-  let userId = localStorage.getItem("userid");
+  const cartId = localStorage.getItem("cartid"); // Make sure cartId is retrieved correctly
 
-  const apiCallOrderPlaced = () => {
-    api
-      .post(`/ecom/orders/placed/${userId}`)
-      .then((response) => {
-        alert("Order Placed Succesfuly.....");
-        navigate("/user/order-details");
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API: ", error);
-      });
-  };
+  // Fetch cart data when cartId changes
+  useEffect(() => {
+    if (cartId) {
+      fetchCartData();
+    }
+  }, [cartId]); // Dependency array ensures this effect runs when cartId changes
 
-  const orderPlaced = () => {
-    apiCallOrderPlaced();
-    
-  };
   const fetchCartData = () => {
+    console.log("fetching cart data");
+
     api
       .get(`/ecom/cart/products/${cartId}`)
       .then((response) => {
         setCartData(response.data);
-        setTotalAmount(response.data.totalAmount);
       })
       .catch((error) => {
         console.error("Error fetching data from the API: ", error);
       });
   };
 
-  useEffect(() => {
-    document.title = "Ecommerse | Cart";
-    fetchCartData();
-  }, [cartId, totalAmount]);
-  const emptyCart = () => {
+  // Remove product from cart
+  const removeProductFromCart = (productId) => {
     api
-      .delete(`/ecom/cart/empty-Cart/${cartId}`)
-      .then((response) => {
-        setTotalAmount(response.data.toalAmout);
-        alert("All cart Item remove");
-        fetchCartData();
+      .delete(`/ecom/cart/remove-product/${cartId}/${productId}`)
+      .then(() => {
+        fetchCartData(); // Refresh cart data after removing a product
       })
       .catch((error) => {
-        alert("Cart is empty");
+        console.error("Error removing product from cart: ", error);
       });
   };
 
-  const removeProductfromCart = (productid) => {
-    api
-      .delete(`/ecom/cart/remove-product/${cartId}/${productid}`)
-      .then((response) => {
-        alert("Product removed from cart");
-        fetchCartData();
-      })
-      .catch((error) => {
-        alert("Cart is empty");
-      });
-  };
-
-  const increaseCount = (productid) => {
-    api
-      .put(`/ecom/cart/increase-productQty/${cartId}/${productid}`)
-      .then((response) => {
-        setTotalAmount(response.data.totalAmount);
-        fetchCartData();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const decreaseCount = (productid) => {
-    api
-      .put(`ecom/cart/decrease-productQty/${cartId}/${productid}`)
-      .then((response) => {
-        setTotalAmount(response.data.totalAmount);
-        fetchCartData();
-      })
-      .catch((error) => {
-        console.log(error);
-        alert("Product can be further decrese....");
-      });
+  // Handle viewing product details
+  const handleViewDetails = (productId) => {
+    navigate(`/product/${productId}`); // Dynamically pass productId
   };
 
   return (
     <div className="cart-page">
       {cartData.cartItems?.length > 0 ? (
-        <div className="cart-list">
+        <div className="cart-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {cartData.cartItems.map((item) => (
-            <div className="cart-card" key={item.cartItemId}>
-              <div className="cartproduct-image1">
-                <img src={item.product.imageUrl} alt={item.product.name} />
+            <div
+              className="product-card w-98 border border-b-slate-600 rounded-lg shadow-lg p-3 bg-white transition-shadow duration-200 hover:shadow-xl"
+              key={item.product.productId}
+            >
+              <div className="product-image mb-2 overflow-hidden rounded-lg">
+                <img
+                  src={item.product.imageUrl}
+                  alt={item.product.name}
+                  className="w-full h-40 object-cover" // Reduced image height
+                />
               </div>
-              <div className="cartproduct-info">
-                <h2>{item.product.name}</h2>
-                <p>Category: {item.product.category}</p>
-                <p>Description: {item.product.description}</p>
-                <h2 className="cartproduct-price">
-                  Price: ₹ {item.product.price}
+              <div className="product-info">
+                <h2 className="text-xl font-bold text-green-700 mb-1">
+                  {item.product.name}
                 </h2>
-                <div className="increaseBtn">
-                  <button onClick={() => increaseCount(item.product.productId)}>
-                    +
-                  </button>
-                  <span
-                    style={{
-                      fontSize: "25px",
-                      color: "red",
-                      textAlign: "center",
-                    }}
-                  >
-                    {item.quantity}
-                  </span>
-                  <button onClick={() => decreaseCount(item.product.productId)}>
-                    -
-                  </button>
-                </div>
-                <div>
+                <p className="text-gray-600 text-sm">
+                  <strong>Category:</strong>{" "}
+                  <span className="text-green-500">{item.product.category}</span>
+                </p>
+                <p className="text-gray-600 text-sm">
+                  <strong>Description:</strong>{" "}
+                  {item.product.description.length > 25
+                    ? `${item.product.description.substring(0, 25)}...`
+                    : item.product.description}
+                </p>
+                <p className="text-gray-600 text-sm">
+                  <strong>Address:</strong>{" "}
+                  {item.product.address?.length > 25
+                    ? `${item.product.address?.substring(0, 25)}...`
+                    : "Not Available"}
+                </p>
+                <h2 className="product-price text-lg font-bold text-green-600 mt-2">
+                  Available quantity: {item.product.price} kg
+                </h2>
+
+                <div className="flex justify-between mt-4">
                   <button
-                    onClick={() =>
-                      removeProductfromCart(item.product.productId)
-                    }
+                    onClick={() => removeProductFromCart(item.product.productId)}
+                    className="bg-red-700 text-white rounded px-4 py-2 hover:bg-red-600 transition shadow-md hover:shadow-lg"
                   >
-                    Remove
+                    Remove from Cart
+                  </button>
+                  <button
+                    onClick={() => handleViewDetails(item.product.productId)}
+                    className="bg-slate-700 text-white rounded px-4 py-2 hover:bg-slate-800 transition shadow-md hover:shadow-lg"
+                  >
+                    View Details
                   </button>
                 </div>
               </div>
@@ -140,38 +104,9 @@ const Cart = () => {
         </div>
       ) : (
         <div className="empty-cart-message">
-          <h1>
-            Your cart is empty. <Link to="/">Shop Now</Link>
-          </h1>
+          <h1>Your cart is empty.</h1>
         </div>
       )}
-
-      <div className="cart-details">
-        <h2>Total Cart Amount: </h2>
-        <h2>${"   " + totalAmount}</h2>
-        <div className="counter-box">
-          <div>
-            <button onClick={orderPlaced}>Order Placed</button>
-          </div>
-          <div>
-            <button
-              onClick={() => emptyCart(cartId)}
-              style={{ backgroundColor: "red" }}
-            >
-              Empty Cart
-            </button>
-          </div>
-          <div>
-            <button
-              onClick={() => {
-                navigate("/user/order-details");
-              }}
-            >
-              Order Page
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

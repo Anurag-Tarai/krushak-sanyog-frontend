@@ -89,7 +89,7 @@ const AddProduct = () => {
         farmer_id: "", // Reset farmer_id
       });
       alert("Product Added Successfully!");
-      navigate("/admin/admin");
+      navigate("/farmer/dashboard");
     } catch (error) {
       setError(error.response?.data?.message || "Error adding product");
       console.error("Error adding product:", error.response?.data);

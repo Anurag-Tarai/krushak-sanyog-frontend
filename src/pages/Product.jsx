@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import api from "../Router/api";
 import { useNavigate } from "react-router-dom";
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GOOGLE_MAP_API } from "../api";
+import LocationButton from "../components/ProductComponents/LocationButton";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -10,12 +13,18 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [priceOrder, setPriceOrder] = useState("All");
   const [nameSearch, setNameSearch] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [radius, setRadius] = useState(2); // Default 2 km
+  const [currentLocation, setCurrentLocation] = useState(null);
   let userid = localStorage.getItem("userid");
 
   const navigate = useNavigate();
 
-  const filterProducts = (category, priceOrder, nameSearch, data) =>{
+  const filterProducts = (category, priceOrder, nameSearch, data, location, radius) => {
     let filteredProducts = data;
+
+    // Convert radius from km to meters for calculation
+    const radiusInMeters = radius * 1000;
 
     // Filter by category
     if (category !== "All") {
@@ -24,13 +33,25 @@ const Product = () => {
       );
     }
 
-    // Filter by name and category
+    // Filter by name, category, and address
     if (nameSearch !== "") {
       const searchQuery = nameSearch.toLowerCase();
       filteredProducts = filteredProducts.filter((product) => 
         product.name.toLowerCase().includes(searchQuery) || 
-        product.category.toLowerCase().includes(searchQuery)
+        product.category.toLowerCase().includes(searchQuery) ||
+        (product.address && product.address.toLowerCase().includes(searchQuery)) // Filter by address
       );
+    }
+
+    // Filter by location within radius
+    if (location) {
+      filteredProducts = filteredProducts.filter((product) => {
+        const productLat = product.latitude;
+        const productLng = product.longitude;
+
+        const distance = getDistance(location.lat, location.lng, productLat, productLng);
+        return distance <= radiusInMeters;
+      });
     }
 
     // Sort by price
@@ -43,17 +64,30 @@ const Product = () => {
     setFilteredProducts(filteredProducts);
   };
 
+  const getDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance * 1000; // Convert to meters
+  };
+
   useEffect(() => {
     axios
       .get("http://127.0.0.1:8080/ecom/products/all")
       .then((response) => {
         setProducts(response.data);
-        filterProducts(selectedCategory, priceOrder, nameSearch, response.data);
+        filterProducts(selectedCategory, priceOrder, nameSearch, response.data, currentLocation, radius);
       })
       .catch((error) => {
         console.error("Error fetching data from the API: ", error);
       });
-  }, [selectedCategory, priceOrder, nameSearch]);
+  }, [selectedCategory, priceOrder, nameSearch, currentLocation, radius]);
 
   const addProductToCart = (productid) => {
     api
@@ -61,14 +95,12 @@ const Product = () => {
       .then((response) => {
         localStorage.setItem("cartid", response.data.cartId);
         navigate("/user/cart");
-        //alert("Product added to Cart");
       })
       .catch((error) => {
         if (error.response && error.response.data) {
           alert(error.response.data.message);
         } else {
-          // alert("Error adding Product. Please try again later.");
-          if(error.response.status == 401){
+          if (error.response.status === 401) {
             navigate("/login");
           }
           console.error("Error:", error);
@@ -76,15 +108,25 @@ const Product = () => {
       });
   };
 
-  // const handleCartClick = () => {
-  //   if (!userId) {
-  //     localStorage.setItem("lastPage", "/user/cart");
-  //     navigate("/login");
-  //   } else {
-  //     navigate("/user/cart");
-  //   }
-  // };
+  const handleLocationSelect = (e) => {
+    setSelectedLocation({
+      lat: e.latLng.lat(),
+      lng: e.latLng.lng(),
+    });
+  };
 
+  const handleUseCurrentLocation = () => {
+    console.log("Fetching geo location");
+   if(!currentLocation){
+    navigator.geolocation.getCurrentPosition((position) => {
+      setCurrentLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+    });
+   }else setCurrentLocation(null)
+  };
+  console.log(currentLocation);
   return (
     <div className="product-page flex flex-col lg:flex-row p-4 bg-gray-50">
       <div className="filter-section w-full lg:w-1/4 p-4 bg-green-100 rounded-lg shadow-md">
@@ -105,18 +147,18 @@ const Product = () => {
           <option value="dryFruits">Dry Fruits</option>
         </select>
 
-        {/* <label className="block mt-4 text-gray-700">Price:</label>
-        <select
-          value={priceOrder}
-          onChange={(e) => {
-            setPriceOrder(e.target.value);
-          }}
-          className="border border-gray-300 rounded p-2 w-full mt-1"
-        >
-          <option value="All">All</option>
-          <option value="LowToHigh">Low to High</option>
-          <option value="HighToLow">High To Low</option>
-        </select> */}
+        <div className="mt-4">
+          <h4 className="text-lg font-bold text-green-700">Location Filter</h4>
+        <LocationButton onClick={handleUseCurrentLocation}/>
+
+          <label className="block mt-4 text-gray-700">Radius (km)</label>
+          <input
+            type="number"
+            value={radius}
+            onChange={(e) => setRadius(e.target.value)}
+            className="border border-gray-300 rounded p-2 w-full mt-1"
+          />
+        </div>
       </div>
 
       <div className="product-list w-full lg:w-3/4 p-4">
@@ -150,17 +192,20 @@ const Product = () => {
                   <p className="text-gray-600">
                     <strong>Description:</strong> {product.description.length > 25 ? `${product.description.substring(0, 25)}...` : product.description}
                   </p>
+                  <p className="text-gray-600">
+                    <strong>Address:</strong> {product.address?.length > 25 ? `${product.address?.substring(0, 25)}...` : product.address}
+                  </p>
                   <h2 className="product-price text-lg font-bold text-green-600 mt-2">Available quantity: {product.price} kg</h2>
 
                   <div className="flex justify-between mt-4">
                     <button 
                       onClick={() => addProductToCart(product.productId)}
-                      className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                      className="bg-slate-700 hover:bg-slate-800 text-white rounded px-4 py-2 hover:bg-slate-600transition shadow-md hover:shadow-lg">
                       Add to Cart
                     </button>
                     <Link to={`/product/${product.productId}`}>
-                      <button className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600 transition shadow-md hover:shadow-lg">
-                        See Details
+                      <button className="bg-green-800 text-white rounded px-4 py-2 hover:bg-green-900 transition shadow-md hover:shadow-lg">
+                        View Details
                       </button>
                     </Link>
                   </div>

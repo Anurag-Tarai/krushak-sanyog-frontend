@@ -1,0 +1,12 @@
+
+First Name	Last Name	Email	Password	Phone Number
+Rajesh	Kumar	rajesh.kumar@gmail.com	pass@1234	+91-9876543210
+Priya	Sharma	priya.sharma@yahoo.com	myPass@5678	+91-9867543102
+Sunil	Gupta	sunil.gupta@outlook.com	sGupta@4321	+91-9956782314
+Anjali	Verma	anjali.verma@gmail.com	verma@8901	+91-9876234512
+Aman	Das	aman.das@hotmail.com	dasaman@567	+91-9987123456
+Kavita	Rao	kavita.rao@yahoo.co.in	kRao@0912	+91-9845126789
+Vikram	Singh	vikram.singh@gmail.com	vikram@2024	+91-9932114567
+Meera	Nair	meera.nair@yahoo.com	mn@5634	+91-9874532109
+Rohit	Patil	rohit.patil@rediffmail.com	rohit@3219	+91-9956234781
+Swati	Deshmukh	swati.deshmukh@gmail.com	swati@1478	+91-9912346578

@@ -10,7 +10,7 @@ function App() {
 
   // Define routes where Navbar and Footer should be hidden
   const isRestrictedPath = [
-    "/admin/admin"
+    "/farmer/dashboard"
   ].includes(location.pathname);
 
   return (

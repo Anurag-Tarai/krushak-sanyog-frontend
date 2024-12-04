@@ -56,7 +56,7 @@ const Admin = () => {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-green-600 text-white p-4 flex items-center justify-between shadow-md">
+      <header className="bg-green-900 text-white p-4 flex items-center justify-between shadow-md">
         <h1 className="text-2xl font-bold tracking-wide mx-auto">FARMER DASHBOARD</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
@@ -81,15 +81,14 @@ const Admin = () => {
             {[
               { name: "Add New Product", value: "add-product" },
               { name: "View All Products", value: "all-products" },
-              { name: "View All Orders", value: "all-orders" },
-              { name: "View All Customers", value: "add-customer" },
-              { name: "Create Auction Session", value: "create-auction" },
               { name: "Live QNA?", value: "QNA-page" },  // The button to access QNA page
+            
+              
             ].map((item) => (
               <li
                 key={item.value}
-                className={`cursor-pointer p-3 rounded-lg text-center bg-green-500 text-white transition duration-200 transform hover:scale-105 hover:bg-green-600 ${
-                  selectedComponent === item.value ? "bg-green-700" : ""
+                className={`cursor-pointer p-3 rounded-lg text-center bg-green-900 text-white transition duration-200 transform hover:scale-105 hover:bg-green-600 ${
+                  selectedComponent === item.value ? "bg-green-900" : ""
                 }`}
                 onClick={() => setSelectedComponent(item.value)}
               >

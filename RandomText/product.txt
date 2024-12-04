@@ -1,0 +1,11 @@
+Product Name	Image URL	Description	Available Quantity	Category	Address
+Fresh Brinjals	https://example.com/img1	Organic and tender brinjals.	80	Vegetables	12, Saheed Nagar, Bhubaneswar, Odisha, 751007
+Kandhamal Turmeric	https://example.com/img2	Pure and organic turmeric.	200	Spices	5, Main Bazaar, Kandhamal, Odisha, 762001
+Fresh Prawns	https://example.com/img3	High-quality Chilika lake prawns.	50	Seafood	32, Chilika Road, Puri, Odisha, 752001
+Sugarcane	https://example.com/img4	Sweet and fresh sugarcane sticks.	120	Fruits	15, Buxi Bazaar, Cuttack, Odisha, 753001
+Fresh Rice	https://example.com/img5	Locally grown premium rice.	300	Grains	8, Daily Market, Sambalpur, Odisha, 768001
+Organic Spinach	https://example.com/img6	Nutritious and fresh spinach.	100	Vegetables	22, Chhend Colony, Rourkela, Odisha, 769015
+Black Gram	https://example.com/img7	Fresh and organic black gram.	250	Pulses	10, Station Road, Balasore, Odisha, 756001
+Coconut	https://example.com/img8	Fresh coconuts from local farms.	150	Fruits	14, Gandhi Nagar, Berhampur, Odisha, 760001
+Fresh Cauliflower	https://example.com/img9	Farm-fresh cauliflower.	70	Vegetables	19, Main Street, Baripada, Odisha, 757001
+Cashew Nuts	https://example.com/img10	Premium-quality cashews.	90	Dry Fruits	25, Nabarangpur Market, Nabarangpur, Odisha, 764059
