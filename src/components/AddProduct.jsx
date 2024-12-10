@@ -208,7 +208,7 @@ const AddProduct = () => {
             <GoogleMap
               mapContainerStyle={{ height: "400px", width: "100%" }}
               zoom={10}
-              center={{ lat: 20.5937, lng: 78.9629 }} // Default to India
+              center={{ lat:product.latitude || 20.5937, lng: product.longitude || 78.9629 }} // Default to India
               onClick={handleMapClick}
             >
               {product.latitude && product.longitude && (

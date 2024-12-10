@@ -58,8 +58,7 @@ const AdminLogin = () => {
         params: {
           role,
         },
-      });
-
+        });
       if (response.headers.authorization) {
         localStorage.setItem("jwtToken", response.headers.authorization);
         localStorage.setItem("adminid", response.data.id);
