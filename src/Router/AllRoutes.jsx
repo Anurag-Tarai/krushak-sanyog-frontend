@@ -19,6 +19,7 @@ import FarmerRegistration from "../pages/auth/FarmerRegistration";
 import AuctionProducts from "../pages/AuctionProducts";
 import AuctionPage from "../pages/AuctionPage";
 import UserProfile from "../pages/UserProfile";
+import ProductDetailsForFarmer from "../components/ProductDetails/ProductDetailsForFarmer";
 
 const AllRoutes = () => {
   return (
@@ -41,6 +42,7 @@ const AllRoutes = () => {
 
         <Route path="/farmer" element={<Privaterouteadmin />}>
           <Route path="dashboard" element={<Admin />} />
+          <Route path="product-details/:productId" element={<ProductDetailsForFarmer/>} />
         </Route>
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register-user" element={<Registration />} />

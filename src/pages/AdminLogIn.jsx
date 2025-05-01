@@ -58,7 +58,7 @@ const AdminLogin = () => {
         params: {
           role,
         },
-        });
+         });
       if (response.headers.authorization) {
         localStorage.setItem("jwtToken", response.headers.authorization);
         localStorage.setItem("adminid", response.data.id);
@@ -89,9 +89,6 @@ const AdminLogin = () => {
       </h2>
 
       <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-xl font-bold text-center mb-4 text-gray-800">
-          Admin LogIn
-        </h2>
         <form onSubmit={submitHandler} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-gray-700 font-medium">

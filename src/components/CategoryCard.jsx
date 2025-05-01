@@ -22,5 +22,4 @@ const CategoryCard = ({ category, imageSrc }) => {
     </div>
   );
 };
-
 export default CategoryCard;
