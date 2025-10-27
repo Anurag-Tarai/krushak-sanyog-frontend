@@ -4,8 +4,8 @@ import axios from "axios";
 import api from "../Router/api";
 import { useNavigate } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { GOOGLE_MAP_API } from "../api";
-import LocationButton from "../components/ProductComponents/LocationButton";
+import { GOOGLE_MAP_API } from "../api/api";
+import LocationButton from "../components/product/LocationButton";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -79,7 +79,7 @@ const Product = () => {
 
   useEffect(() => {
     api
-      .get("/ecom/products/all")
+      .get("/api/v1/products")
       .then((response) => {
         setProducts(response.data);
         filterProducts(selectedCategory, priceOrder, nameSearch, response.data, currentLocation, radius);

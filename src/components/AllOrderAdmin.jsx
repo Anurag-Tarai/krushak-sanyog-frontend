@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios"; // Import Axios
-import "../comp_css/AllOrderAdmin.css";
+import "../styles/components/AllOrderAdmin.css";
 import api from "../Router/api";
 
 const AddOrderAdmin = () => {

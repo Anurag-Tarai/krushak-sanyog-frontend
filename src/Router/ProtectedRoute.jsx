@@ -3,7 +3,7 @@ import { Outlet, Navigate } from "react-router-dom";
 
 const Privateroute = () => {
   let auth = false;
-  if (localStorage.getItem("jwtToken") && localStorage.getItem("userid")) {
+  if (localStorage.getItem("jwtToken") && localStorage.getItem("userId")) {
     auth = true;
   }
   return auth ? <Outlet /> : <Navigate to="/login" />;
@@ -11,10 +11,10 @@ const Privateroute = () => {
 
 const Privaterouteadmin = () => {
   let auth = false;
-  if (localStorage.getItem("jwtToken") && localStorage.getItem("adminid")) {
+  if (localStorage.getItem("jwtToken") && localStorage.getItem("farmerId")) {
     auth = true;
   }
-  return auth ? <Outlet /> : <Navigate to="/admin-login" />;
+  return auth ? <Outlet /> : <Navigate to="/farmer/signin" />;
 };
 
 

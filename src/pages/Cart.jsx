@@ -76,8 +76,8 @@ const Cart = () => {
                 </p>
                 <p className="text-gray-600 text-sm">
                   <strong>Address:</strong>{" "}
-                  {item.product.address?.length > 25
-                    ? `${item.product.address?.substring(0, 25)}...`
+                  {item.product.address?
+              `${item.product.address?.substring(0, 25)}...`
                     : "Not Available"}
                 </p>
                 <h2 className="product-price text-lg font-bold text-green-600 mt-2">

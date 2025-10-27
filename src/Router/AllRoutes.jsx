@@ -1,25 +1,22 @@
-import React from "react";
+
 import Home from "../pages/Home";
 import Product from "../pages/Product";
-import Profile from "../components/Profile";
-import OrderDetails from "../pages/UserProfile";
-import Payment from "../pages/Payment";
-import PaymentForm from "../pages/PaymentForm";
+import Profile from "../components/common/Profile";
 import Login from "../pages/LogIn";
-import AdminLogin from "../pages/AdminLogIn";
 import Registration from "../pages/Registration";
 import SingleProduct from "../pages/SingleProduct";
 import Cart from "../pages/Cart";
-import ShippingDetails from "../pages/ShippingDetails";
 import { Routes, Route } from "react-router-dom";
 import { Privateroute,Privaterouteadmin } from "../Router/ProtectedRoute";
-import Admin from "../pages/Admin";
-import NotFound from "../components/NotFound";
-import FarmerRegistration from "../pages/auth/FarmerRegistration";
+import Admin from "../pages/FarmerDashBoard";
+import NotFound from "../components/common/NotFound";
 import AuctionProducts from "../pages/AuctionProducts";
 import AuctionPage from "../pages/AuctionPage";
 import UserProfile from "../pages/UserProfile";
-import ProductDetailsForFarmer from "../components/ProductDetails/ProductDetailsForFarmer";
+import ProductDetailsForFarmer from "../components/product/ProductDetailsForFarmer";
+import FarmerRegistration from "../auth/FarmerRegistration";
+import FarmerSingIn from "../auth/FarmerSignIn";
+import FarmerSignIn from "../auth/FarmerSignIn";
 
 const AllRoutes = () => {
   return (
@@ -33,23 +30,20 @@ const AllRoutes = () => {
 
         <Route path="/user" element={<Privateroute />}>
           <Route path="cart" element={<Cart />} />
-          <Route path="save-address" element={<ShippingDetails />} />
           <Route path="profile" element={<UserProfile />} />
-          <Route path="payment-success" element={<Payment />} />
-          <Route path="make-payment" element={<PaymentForm />} />
           <Route path="profile/:userid" element={<Profile />} />
         </Route>
 
         <Route path="/farmer" element={<Privaterouteadmin />}>
           <Route path="dashboard" element={<Admin />} />
-          <Route path="product-details/:productId" element={<ProductDetailsForFarmer/>} />
+          <Route path="product/details/:productId" element={<ProductDetailsForFarmer/>} />
         </Route>
-        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register-user" element={<Registration />} />
         <Route path="/product/:productId" element={<SingleProduct />} />
         <Route path="/products" element={<Product />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/farmer-register" element={<FarmerRegistration/>}/>
+        <Route path="/farmer/signin" element={<FarmerSignIn/>} />
+        <Route path="/farmer/signup" element={<FarmerRegistration/>}/>
       </Routes>
     </>
   );

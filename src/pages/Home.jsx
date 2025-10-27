@@ -1,14 +1,13 @@
 import React from "react";
-import Slider from "../components/Slider";
-import CategoryCard from "../components/CategoryCard";
-import Veg from "../picture/category/vegitables.jpg";
-import Fruits from "../picture/category/fruits.webp";
-import DryFruits from "../picture/category/dry-fruits.webp";
-import Dairy from "../picture/category/dairy.jpeg";
-import HerbSpices from "../picture/category/indian-spices.webp";
-import Farmer1 from "../picture/farmer/best2.jpg";
-import Farmer2 from "../picture/farmer/best.jpg";
-import Farmer3 from "../picture/farmer/tim-mossholder-xDwEa2kaeJA-unsplash.jpg";
+import Slider from "../components/common/Slider";
+import CategoryCard from "../components/common/CategoryCard";
+import Veg from "../assets/category/vegitables.jpg";
+import Fruits from "../assets/category/fruits.webp";
+import DryFruits from "../assets/category/dry-fruits.webp";
+import Dairy from "../assets/category/dairy.jpeg";
+import HerbSpices from "../assets/category/indian-spices.webp";
+import Farmer1 from "../assets/farmer/farmer_connect.png";
+
 
 const Home = () => {
   const categories = [
@@ -19,7 +18,7 @@ const Home = () => {
     { name: "Herbs and Spices", image: HerbSpices },
   ];
 
-  const slideImages = [Farmer1, Farmer2, Farmer3];
+  const slideImages = [Farmer1];
 
   return (
     <div className="bg-gray-50 p-4 lg:p-10 rounded-lg shadow-lg">

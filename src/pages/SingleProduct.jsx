@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from '../Router/api'
 import axios from "axios";
-import { GOOGLE_MAP_API } from "../api";
+import { GOOGLE_MAP_API } from "../api/api";
 import { StarFilledIcon, StarIcon } from "@radix-ui/react-icons";
 
 
@@ -34,7 +34,8 @@ const SingleProduct = () => {
     latitude: 19.932041306115536,
     longitude: 85.14404296875,
     productId: 9,
-    reviews: []
+    reviews: [],
+    variants:""
   });
 
   const [farmer, setFarmer] = useState({
@@ -49,11 +50,76 @@ const SingleProduct = () => {
   });
 
   
-  const [messages, setMessages] = useState([
-    { from: "Farmer", text: "Hello, feel free to ask any questions about this product!" },
-    { from: "Buyer", text: "What is the price of this cabbage?" }
-  ]);
-  const [newMessage, setNewMessage] = useState("");
+ const [messages, setMessages] = useState([]);
+   const [newMessage, setNewMessage] = useState("");
+   const token = localStorage.getItem("jwtToken");
+
+   const handleSendMessage = async () => {
+    const userId = localStorage.getItem("userid"); // fetch adminid from localStorage
+    const productId = product.productId;
+  
+    if (!newMessage.trim()) return;
+  
+    const commentPayload = {
+      userId: parseInt(userId),
+      productId: parseInt(productId),
+      content: newMessage.trim(),
+    };
+  
+    try {
+      await api.post("/ecom/comments/add", commentPayload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      // Optionally, update the UI (e.g., chat messages or comments)
+      setMessages([...messages, { from: "You", text: newMessage }]);
+      setNewMessage("");
+    } catch (error) {
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Status code:", error.response.status);
+        console.error("Headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      } else {
+        console.error("Error setting up the request:", error.message);
+      }
+    
+      alert("Error posting comment. Please try again.");
+    }
+    
+  };
+
+  console.log(product.farmer_id);
+  
+
+  // Use effect to fetch product chat data
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+  
+      api.get(`/ecom/comments/product/${productId}`)
+        .then(res => {
+          const fetchedMessages = res.data
+            .filter(comment =>
+              comment.role === 'ROLE_USER' ||
+              (comment.role === 'ROLE_ADMIN' && String(comment.userId) === String(product.farmer_id))
+            )
+            .map(comment => ({
+              from: comment.username || `User ${comment.userId}`,
+              text: comment.content,
+              role: comment.role,
+            }));
+          setMessages(fetchedMessages);
+        });
+    }, 500);
+  
+    return () => clearInterval(interval);
+  }, [productId]);
+
   const [mapCoordinates, setMapCoordinates] = useState(getRandomCoordinates()); // Initialize coordinates here
   const userid = localStorage.getItem("userid");
 
@@ -84,6 +150,7 @@ const SingleProduct = () => {
           longitude: fetchedProduct.longitude || 0,
           productId: fetchedProduct.productId || 0,
           reviews: fetchedProduct.reviews || [],
+          variants : fetchedProduct.variants
         });
         
         console.log("Fetched product:", fetchedProduct);
@@ -148,13 +215,6 @@ const addProductToCart = (productId) => {
     });
 };
 
-
-  const handleSendMessage = () => {
-    if (newMessage) {
-      setMessages([...messages, { from: "Buyer", text: newMessage }]);
-      setNewMessage("");
-    }
-  };
 
  useEffect(() => {
   // Function to initialize the Google Map
@@ -227,7 +287,7 @@ const FarmerProfile = ({ farmer }) => {
     <div className="bg-gray-100 p-4 rounded-lg shadow">
       <h3 className="text-xl font-semibold text-green-600">Farmer Profile</h3>
       <p><strong>Name:</strong> {farmer.firstName +" "+farmer.lastName}</p>
-      <p><strong>Rating:</strong> {(Math.random() * 4 + 1).toFixed(1)} / 5</p>
+      <p><strong>Rating:</strong> -- </p>
     </div>
   );
 };
@@ -255,27 +315,46 @@ const FarmerContact = ({ farmer }) => {
 // Live Chat Component
 const LiveChat = ({ messages, newMessage, setNewMessage, handleSendMessage }) => {
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow mt-4">
-      <h3 className="text-xl font-semibold text-green-600">Live QAN</h3>
-      <div className="space-y-2">
-        {messages.map((message, index) => (
-          <div key={index} className={`text-sm ${message.from === "Farmer" ? "text-green-600" : "text-blue-600"}`}>
-            <strong>{message.from}:</strong> {message.text}
-          </div>
-        ))}
-      </div>
-      <div className="mt-4">
-        <textarea
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          className="w-full p-2 border rounded-lg"
-        />
-        <button onClick={handleSendMessage} className="mt-2 py-2 px-4 bg-green-600 text-white rounded-lg">
-          Send
-        </button>
-      </div>
+    <div className="bg-white shadow-xl rounded-2xl p-6 flex-1 flex flex-col h-96">
+  <h2 className="text-xl font-bold text-green-800 mb-4">Live Chat</h2>
+
+  {/* Messages */}
+  <div className="flex-1 overflow-y-auto border rounded-lg p-4 mb-4 space-y-2">
+  {messages.map((msg, index) => (
+    <div
+      key={index}
+      className={`p-2 rounded-lg ${
+        msg.role === "ROLE_ADMIN"
+          ? "bg-green-100"
+          : msg.from === "You"
+          ? "bg-green-100 text-right"
+          : "bg-gray-100"
+      }`}
+    >
+      <p className="text-sm font-medium">{msg.from}</p>
+      <p>{msg.text}</p>
     </div>
+  ))}
+</div>
+
+  {/* Input and Send Button */}
+  <div className="flex items-center space-x-4">
+  <input
+    type="text"
+    value={newMessage}
+    onChange={(e) => setNewMessage(e.target.value)}
+    placeholder="Type a message..."
+    className="flex-1 border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-green-600"
+  />
+  <button
+    onClick={handleSendMessage}
+    className="bg-green-800 hover:bg-green-900 text-white px-4 py-2 rounded-xl"
+  >
+    Send
+  </button>
+</div>
+
+</div>
   );
 };
 
@@ -307,6 +386,7 @@ const ProductDetails = ({ product, addProductToCart, navigate, mapCoordinates })
         <p><strong>Category:</strong> {product.category}</p>
         <p><strong>Description:</strong> {product.description}</p>
         <p><strong>Quantity Available:</strong> {product.price} kg</p>
+        <p><strong>Variants Available:</strong> {product.variants}</p>
         <button
           onClick={() => {
             addProductToCart(product.productId);

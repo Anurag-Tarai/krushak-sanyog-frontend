@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../comp_css/AdminUserDetails.css'; 
+import '../styles/components/AdminUserDetails.css'; 
 import api from '../Router/api';
 
 function AdminUserDetails() {
