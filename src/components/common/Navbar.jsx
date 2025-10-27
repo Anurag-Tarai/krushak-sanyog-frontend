@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCartShopping, faUser, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCartShopping,
+  faUser,
+  faBars,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import appLogo from "../../assets/appLogo2.png";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,17 +16,13 @@ const Navbar = () => {
   let userId = localStorage.getItem("userid");
   let name = localStorage.getItem("name");
 
-  const handleLoginClick = () => {
-    navigate("/login");
-  };
-
+  const handleLoginClick = () => navigate("/login");
   const handleLogoutClick = () => {
     localStorage.removeItem("userid");
     localStorage.removeItem("jwtToken");
     localStorage.removeItem("cartid");
     localStorage.removeItem("name");
-
-    alert("Logout Successfully.....");
+    alert("Logout Successfully!");
     navigate("/");
   };
 
@@ -28,140 +30,168 @@ const Navbar = () => {
     if (!userId) {
       localStorage.setItem("lastPage", "/user/cart");
       navigate("/login");
-    } else {
-      navigate("/user/cart");
-    }
+    } else navigate("/user/cart");
   };
 
-  const handleProductsClick = () => {
-    navigate("/product");
-  };
-
-  const handleFarmerClick = () => {
-    navigate("/farmer/signin");
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const handleProductsClick = () => navigate("/product");
+  const handleFarmerClick = () => navigate("/farmer/signin");
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <nav className="bg-green-900 text-white fixed w-full top-0 z-50">
-      <div className="flex items-center justify-between h-16 px-4">
-        {/* Logo */}
+    <nav
+      className="fixed top-0 left-0 w-full z-[9999] backdrop-blur-xl border-b border-green-800/20 
+                 bg-[#020b06]/95 shadow-[0_0_25px_rgba(0,0,0,0.4)]"
+    >
+      {/* 🌿 Subtle green gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-700/10 to-transparent pointer-events-none" />
+
+      {/* 🌱 Thin glowing line under navbar */}
+      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-green-500/50 to-transparent blur-[1px]" />
+
+      <div className="flex items-center justify-between h-16 px-4 md:px-10 relative z-10">
+        {/* 🌾 Logo */}
         <h3
-          className="text-xl font-bold cursor-pointer"
+          className="flex items-center cursor-pointer transition-transform duration-300 hover:scale-105"
           onClick={() => navigate("/")}
         >
-          Farmer Connect
+          <div className="h-10 w-36 flex items-center justify-center rounded-md bg-transparent">
+            <img
+              src={appLogo}
+              alt="Farmer Connect"
+              className="h-full w-full object-cover brightness-110 contrast-110 
+                         drop-shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+            />
+          </div>
         </h3>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-4">
+        {/* 🖥️ Desktop Menu */}
+        <div className="hidden md:flex items-center space-x-7 text-sm font-medium text-gray-200">
           <button
-            className="hover:text-white transition duration-300 bg-green-900 hover:bg-green-600"
             onClick={handleProductsClick}
+            className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
+                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
           >
             Explore Products
           </button>
+
           <button
-            className="hover:text-white 
-            transition duration-300 bg-green-900 hover:bg-green-600"
             onClick={handleCartClick}
+            className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
+                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
           >
-            <FontAwesomeIcon icon={faCartShopping} className="mr-2" />
+            <FontAwesomeIcon icon={faCartShopping} className="mr-2 text-green-400/80" />
             Cart
           </button>
 
           {userId ? (
             <>
               <button
-                className="hover:text-white transition duration-300 bg-green-900 hover:bg-green-600"
                 onClick={() => navigate("/user/profile")}
+                className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
+                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
               >
-                <FontAwesomeIcon icon={faUser} className="mr-2" />
+                <FontAwesomeIcon icon={faUser} className="mr-2 text-green-400/80" />
                 {name}
               </button>
               <button
-                className="bg-red-500 hover:bg-red-600
-                 text-white px-4 py-1 rounded-lg transition duration-300"
                 onClick={handleLogoutClick}
+                className="bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 
+                           text-white px-4 py-1.5 rounded-lg shadow-[0_0_10px_rgba(239,68,68,0.4)] 
+                           hover:shadow-[0_0_15px_rgba(239,68,68,0.6)] transition duration-300"
               >
                 Logout
               </button>
             </>
           ) : (
             <button
-              className="hover:text-white transition duration-300 bg-green-900 hover:bg-green-600"
               onClick={handleLoginClick}
+              className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
+                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
             >
-              <FontAwesomeIcon icon={faUser} className="mr-2" />
-              Login
+              <FontAwesomeIcon icon={faUser} className="mr-2 text-green-400/80" />
+              Signin
             </button>
           )}
 
           {!userId && (
-            <button 
-            className="hover:text-white transition duration-300 bg-green-900 hover:bg-green-600"
-            onClick={handleFarmerClick}
+            <button
+              onClick={handleFarmerClick}
+              className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
+                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
             >
-              Get Started As Farmer
+              Signin As Farmer
             </button>
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* 📱 Mobile Menu Toggle */}
         <button
-          className="md:hidden bg-green-900 hover:bg-green-500 text-white text-2xl p-2 rounded-lg hover:text-white transition duration-300"
           onClick={toggleMenu}
+          className="md:hidden bg-green-900/10 hover:bg-green-800/20 text-green-400 text-2xl p-2 rounded-lg 
+                     shadow-[0_0_12px_rgba(34,197,94,0.3)] transition duration-300"
         >
-          {isMenuOpen ? <FontAwesomeIcon icon={faTimes} /> : <FontAwesomeIcon icon={faBars} />}
+          {isMenuOpen ? (
+            <FontAwesomeIcon icon={faTimes} />
+          ) : (
+            <FontAwesomeIcon icon={faBars} />
+          )}
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* 📲 Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-green-800 hover:bg-green-700 text-white flex flex-col space-y-2 p-4">
-          <button onClick={handleProductsClick}  className="hover:text-white 
-            transition duration-300 bg-green-900 hover:bg-green-600" >
-              Explore Products
-              </button>
-          <button onClick={handleCartClick}   className="hover:text-white 
-            transition duration-300 bg-green-900 hover:bg-green-600" >
-            <FontAwesomeIcon icon={faCartShopping} className="mr-2" />
+        <div
+          className="md:hidden bg-[#010805]/95 border-t border-green-900/40 text-gray-100 flex flex-col space-y-3 p-4 
+                     shadow-[0_0_25px_rgba(34,197,94,0.2)]"
+        >
+          <button
+            onClick={handleProductsClick}
+            className="hover:text-green-400 transition duration-300"
+          >
+            Explore Products
+          </button>
+
+          <button
+            onClick={handleCartClick}
+            className="flex items-center hover:text-green-400 transition duration-300"
+          >
+            <FontAwesomeIcon icon={faCartShopping} className="mr-2 text-green-400/80" />
             Cart
           </button>
 
           {userId ? (
             <>
-              <button onClick={() => navigate("/user/profile")} className="hover:text-white 
-            transition duration-300 bg-green-900 hover:bg-green-600">
-                <FontAwesomeIcon icon={faUser} className="mr-2" />
+              <button
+                onClick={() => navigate("/user/profile")}
+                className="flex items-center hover:text-green-400 transition duration-300"
+              >
+                <FontAwesomeIcon icon={faUser} className="mr-2 text-green-400/80" />
                 {name}
               </button>
               <button
-                 className="bg-red-500 hover:bg-red-600
-                 text-white px-4 py-1 rounded-lg transition duration-300"
                 onClick={handleLogoutClick}
+                className="bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 
+                           text-white px-4 py-1.5 rounded-lg shadow-md transition duration-300"
               >
                 Logout
               </button>
             </>
           ) : (
-            <button onClick={handleLoginClick}  className="hover:text-white 
-            transition duration-300 bg-green-900 hover:bg-green-600">
-              <FontAwesomeIcon icon={faUser} className="mr-2" />
-              Login
+            <button
+              onClick={handleLoginClick}
+              className="flex items-center hover:text-green-400 transition duration-300"
+            >
+              <FontAwesomeIcon icon={faUser} className="mr-2 text-green-400/80" />
+              Signin
             </button>
           )}
 
           {!userId && (
             <button
-               className="hover:text-white 
-            transition duration-300 bg-green-900 hover:bg-green-600"
               onClick={handleFarmerClick}
+              className="hover:text-green-400 transition duration-300"
             >
-              Get Started As Farmer
+              Signin As Farmer
             </button>
           )}
         </div>

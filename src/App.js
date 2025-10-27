@@ -1,33 +1,42 @@
-import React from 'react'; 
+import React from "react";
 import "./App.css";
 import AllRoutes from "./Router/AllRoutes";
 import { useLocation, matchPath } from "react-router-dom";
-import Navbar from './components/common/Navbar';
-import Footer from './components/common/Footer';
+import Navbar from "./components/common/Navbar";
+import FarmerNavbar from "./components/common/FarmerNavbar";
+import Footer from "./components/common/Footer";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 function App() {
   const location = useLocation();
 
-  // List of restricted path patterns
   const restrictedPaths = [
     "/farmer/dashboard",
-    "/farmer/product/details/:productId"
+    "/farmer/product/details/:productId",
   ];
 
-  // Check if current path matches any restricted pattern
   const isRestrictedPath = restrictedPaths.some((path) =>
     matchPath({ path, end: true }, location.pathname)
   );
 
+  // 🧠 Determine role dynamically from localStorage
+  const isFarmerLoggedIn = localStorage.getItem("farmerId");
+  const isBuyerLoggedIn = localStorage.getItem("userid");
+
   return (
-    <div className="flex flex-col min-h-screen">
-      {!isRestrictedPath && <Navbar/>}
+    <div className="flex flex-col min-h-screen bg-black text-gray-100">
+      {/* ✅ Conditional Navbar */}
+      {isFarmerLoggedIn ? <FarmerNavbar /> : <Navbar />}
 
-      <div className={`flex-grow ${!isRestrictedPath ? "pt-16 pb-16" : ""}`}>
+      {/* ✅ Ensure scroll-to-top on route change */}
+      <ScrollToTop />
+
+      <main className="flex-grow">
         <AllRoutes />
-      </div>
+      </main>
 
-      {!isRestrictedPath && <Footer/>}
+      {/* ✅ Hide footer for certain pages */}
+      {!isRestrictedPath && <Footer />}
     </div>
   );
 }

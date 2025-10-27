@@ -21,17 +21,13 @@ const FarmerSignIn = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!form.email) {
-      newErrors.email = "Email is required.";
-    } else if (!emailRegex.test(form.email)) {
+    if (!form.email) newErrors.email = "Email is required.";
+    else if (!emailRegex.test(form.email))
       newErrors.email = "Enter a valid email address.";
-    }
 
-    if (!form.password) {
-      newErrors.password = "Password is required.";
-    } else if (form.password.length < 6) {
+    if (!form.password) newErrors.password = "Password is required.";
+    else if (form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters.";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -40,72 +36,56 @@ const FarmerSignIn = () => {
   const setHandlerChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    setErrors({ ...errors, [name]: "" }); // Clear error message for the field
+    setErrors({ ...errors, [name]: "" });
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-try {
-  const role = "ROLE_FARMER";
 
-  const response = await axios.post(
-    "http://localhost:8080/api/v1/auth/login",
-    {
-      email: form.email,
-      password: form.password,
-      role: role,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "*/*",
-      },
+    try {
+      const role = "ROLE_FARMER";
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/auth/login",
+        { email: form.email, password: form.password, role },
+        { headers: { "Content-Type": "application/json", Accept: "*/*" } }
+      );
+
+      
+      const { token, userId, name } = response.data;
+      if (token) {
+        localStorage.setItem("jwtToken", token);
+        localStorage.setItem("farmerId", userId);
+        localStorage.setItem("name", name || "Farmer");
+        localStorage.setItem("role", "farmer"); // or "buyer"
+        navigate("/farmer/dashboard");
+      } else {
+        alert("Invalid credentials or missing token.");
+      }
+    } catch (error) {
+      if (error.response?.status === 401)
+        alert("Invalid credentials. Please try again.");
+      else if (error.response?.status === 403)
+        alert("Access denied. You are not a farmer.");
+      else if (error.response?.status === 502)
+        alert("Server error: You are not a Farmer.");
+      else alert("Error during login. Please try again later.");
     }
-  );
-  console.log(response);
-  
-
-  console.log(response.data.token);
-  const { token, userId, name } = response.data;
-
-  if (response.data?.token) {
-    localStorage.setItem("jwtToken",token);
-    localStorage.setItem("farmerId", userId);
-    localStorage.setItem("name", name || "Farmer");
-
-    navigate("/farmer/dashboard");
-  } else {
-    alert("Invalid credentials or missing token.");
-  }
-} catch (error) {
-  if (error.response?.status === 401) {
-    alert("Invalid credentials. Please try again.");
-  } else if (error.response?.status === 403) {
-    alert("Access denied. You are not a farmer.");
-  } else if (error.response?.status === 502) {
-    alert("Server error: You are not a Farmer.");
-  } else {
-    alert("Error during login. Please try again later.");
-    console.error("Error during login:", error);
-  }
-}
   };
 
   const { email, password } = form;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-        WELCOME TO FARMER LOGIN PAGE
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-green-950 to-black text-white px-4">
+      <h2 className="text-3xl font-bold mb-6 tracking-wide bg-gradient-to-r from-green-400 to-green-200 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]">
+        Welcome, Farmer 🌾
       </h2>
 
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
-        <form onSubmit={submitHandler} className="space-y-4">
+      <div className="w-full max-w-md bg-gray-900/70 border border-green-800/40 backdrop-blur-lg rounded-2xl shadow-[0_0_25px_rgba(34,197,94,0.15)] p-8 transition-all duration-300 hover:shadow-[0_0_35px_rgba(34,197,94,0.25)]">
+        <form onSubmit={submitHandler} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-gray-700 font-medium">
-              Email:
+            <label htmlFor="email" className="block text-green-300 font-medium mb-1">
+              Email
             </label>
             <input
               id="email"
@@ -113,16 +93,18 @@ try {
               name="email"
               value={email}
               onChange={setHandlerChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
+                focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              placeholder="Enter your email"
             />
             {errors.email && (
-              <span className="text-red-500 text-sm">{errors.email}</span>
+              <span className="text-red-400 text-sm mt-1 block">{errors.email}</span>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-gray-700 font-medium">
-              Password:
+            <label htmlFor="password" className="block text-green-300 font-medium mb-1">
+              Password
             </label>
             <input
               id="password"
@@ -130,27 +112,33 @@ try {
               name="password"
               value={password}
               onChange={setHandlerChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
+                focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              placeholder="Enter your password"
             />
             {errors.password && (
-              <span className="text-red-500 text-sm">{errors.password}</span>
+              <span className="text-red-400 text-sm mt-1 block">{errors.password}</span>
             )}
           </div>
 
-          <div>
-            <input
-              type="submit"
-              value="Login"
-              className="w-full py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition duration-200"
-            />
-          </div>
+          <button
+            type="submit"
+            className="w-full py-2 mt-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600
+              text-white font-semibold rounded-lg shadow-lg transition-all duration-200 hover:scale-[1.02]"
+          >
+            Sign In
+          </button>
         </form>
-        <p className="mt-4 text-center">
-                  Don't have an account?{" "}
-                  <Link to="/farmer/signup" className="text-blue-500 hover:underline">
-                    Signup here
-                  </Link>
-              </p>
+
+        <p className="mt-6 text-center text-sm text-green-200">
+          Don’t have an account?{" "}
+          <Link
+            to="/farmer/signup"
+            className="text-green-400 hover:underline hover:text-green-300 transition"
+          >
+            Signup here
+          </Link>
+        </p>
       </div>
     </div>
   );

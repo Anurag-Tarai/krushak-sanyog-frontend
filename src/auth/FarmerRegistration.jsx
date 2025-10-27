@@ -26,33 +26,22 @@ const FarmerRegistration = () => {
   const validateForm = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[6-9]\d{9}$/; // Matches Indian phone numbers
+    const phoneRegex = /^[6-9]\d{9}$/;
 
-    if (!form.email) {
-      newErrors.email = "Email is required.";
-    } else if (!emailRegex.test(form.email)) {
+    if (!form.email) newErrors.email = "Email is required.";
+    else if (!emailRegex.test(form.email))
       newErrors.email = "Enter a valid email address.";
-    }
 
-    if (!form.password) {
-      newErrors.password = "Password is required.";
-    } else if (form.password.length < 6) {
+    if (!form.password) newErrors.password = "Password is required.";
+    else if (form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters.";
-    }
 
-    if (!form.firstName) {
-      newErrors.firstName = "First name is required.";
-    }
+    if (!form.firstName) newErrors.firstName = "First name is required.";
+    if (!form.lastName) newErrors.lastName = "Last name is required.";
 
-    if (!form.lastName) {
-      newErrors.lastName = "Last name is required.";
-    }
-
-    if (!form.phoneNumber) {
-      newErrors.phoneNumber = "Phone number is required.";
-    } else if (!phoneRegex.test(form.phoneNumber)) {
+    if (!form.phoneNumber) newErrors.phoneNumber = "Phone number is required.";
+    else if (!phoneRegex.test(form.phoneNumber))
       newErrors.phoneNumber = "Enter a valid 10-digit phone number.";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -61,12 +50,11 @@ const FarmerRegistration = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    setErrors({ ...errors, [name]: "" }); // Clear error for the field being updated
+    setErrors({ ...errors, [name]: "" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     try {
@@ -93,89 +81,63 @@ const FarmerRegistration = () => {
   const { email, password, firstName, lastName, phoneNumber } = form;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Farmer Registration
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 font-medium">Email:</label>
-            <input
-              type="text"
-              name="email"
-              value={email}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.email && (
-              <span className="text-red-500 text-sm">{errors.email}</span>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium">Password:</label>
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.password && (
-              <span className="text-red-500 text-sm">{errors.password}</span>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium">First Name:</label>
-            <input
-              type="text"
-              name="firstName"
-              value={firstName}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.firstName && (
-              <span className="text-red-500 text-sm">{errors.firstName}</span>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium">Last Name:</label>
-            <input
-              type="text"
-              name="lastName"
-              value={lastName}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.lastName && (
-              <span className="text-red-500 text-sm">{errors.lastName}</span>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium">Phone Number:</label>
-            <input
-              type="text"
-              name="phoneNumber"
-              value={phoneNumber}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.phoneNumber && (
-              <span className="text-red-500 text-sm">{errors.phoneNumber}</span>
-            )}
-          </div>
-          <div>
-            <input
-              type="submit"
-              value="Register"
-              className="w-full py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition duration-200"
-            />
-          </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-green-950 to-gray-900 pt-24 p-4">
+      {/* 🌾 Title above form */}
+     <h2 className="text-2xl md:text-3xl font-bold text-green-400 mb-6 drop-shadow-[0_0_10px_rgba(34,197,94,0.5)] tracking-wide text-center">
+  🌿 Join the Farmer Network 🌽
+</h2>
+
+
+      <div
+        className="w-full max-w-md bg-gray-900/70 border border-gray-800 backdrop-blur-xl 
+                   shadow-2xl rounded-2xl p-8 transition-all duration-500 
+                   hover:shadow-[0_0_40px_rgba(34,197,94,0.25)] 
+                   hover:border-green-700/60 hover:bg-gray-900/80"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {[
+            { label: "Email", name: "email", type: "text", value: email },
+            { label: "Password", name: "password", type: "password", value: password },
+            { label: "First Name", name: "firstName", type: "text", value: firstName },
+            { label: "Last Name", name: "lastName", type: "text", value: lastName },
+            { label: "Phone Number", name: "phoneNumber", type: "text", value: phoneNumber },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block text-green-100 font-medium mb-1">
+                {field.label}:
+              </label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={field.value}
+                onChange={handleInputChange}
+                placeholder={`Enter ${field.label.toLowerCase()}`}
+                className="w-full px-4 py-2.5 bg-gray-800/90 text-green-100 border border-gray-700 rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 
+                           placeholder-gray-400 transition-all duration-200"
+              />
+              {errors[field.name] && (
+                <p className="text-red-400 text-sm mt-1">{errors[field.name]}</p>
+              )}
+            </div>
+          ))}
+
+          <button
+            type="submit"
+            className="w-full py-2.5 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg 
+                       shadow-md hover:shadow-green-500/20 transition-all duration-200 transform hover:-translate-y-0.5"
+          >
+            Register
+          </button>
         </form>
-        <p className="mt-4 text-center">
+
+        <p className="mt-6 text-center text-gray-400 text-sm">
           Already have an account?{" "}
-          <Link to="/farmer/signin" className="text-blue-500 hover:underline">
-            Signin here
+          <Link
+            to="/farmer/signin"
+            className="text-green-400 hover:text-green-300 font-semibold transition-all"
+          >
+            Sign in here
           </Link>
         </p>
       </div>

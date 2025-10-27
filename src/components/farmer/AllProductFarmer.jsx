@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../Router/api";
@@ -8,11 +8,7 @@ const fetchProducts = async ({ queryKey }) => {
   const res = await api.get(`/api/v1/products/farmer/${farmerId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-
-  console.log(res.data);
-
   const data = res.data || [];
-  // ✅ Sort newest first
   return data.sort((a, b) => b.productId - a.productId);
 };
 
@@ -20,6 +16,8 @@ const AllProductFarmer = ({ refresh }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem("jwtToken");
   const farmerId = localStorage.getItem("farmerId");
+  const [statusMap, setStatusMap] = useState({});
+  const [confirmId, setConfirmId] = useState(null); // store productId for confirmation
 
   const {
     data: products = [],
@@ -42,20 +40,40 @@ const AllProductFarmer = ({ refresh }) => {
 
   const handleViewDetails = (id) => navigate(`/farmer/product/details/${id}`);
 
-  const handleDelete = async (id) => {
+  const handleDeleteConfirmed = async (id) => {
+    setStatusMap((prev) => ({ ...prev, [id]: "processing" }));
+    setConfirmId(null);
+
     try {
       await api.delete(`/api/v1/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      refetch();
+
+      setStatusMap((prev) => ({ ...prev, [id]: "deleted" }));
+      setTimeout(() => {
+        refetch();
+        setStatusMap((prev) => {
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      }, 1200);
     } catch (err) {
       console.error("Error deleting product:", err);
+      setStatusMap((prev) => ({ ...prev, [id]: "failed" }));
+      setTimeout(() => {
+        setStatusMap((prev) => {
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      }, 1500);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="text-emerald-400 font-semibold text-center p-6">
+      <div className="text-green-400 font-semibold text-center p-6">
         Loading...
       </div>
     );
@@ -79,75 +97,128 @@ const AllProductFarmer = ({ refresh }) => {
     );
   }
 
-  // 🌑 Dark theme aesthetic design
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 px-6 py-10">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-center mb-10 text-emerald-400 tracking-wide drop-shadow-lg">
-          🌾 Your Products
-        </h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => {
-            const imageUrl =
-              product.imageUrls?.[0] && product.imageUrls[0].startsWith("http")
-                ? product.imageUrls[0]
-                : "/placeholder.jpg";
-
-            return (
-              <div
-                key={product.productId}
-                className="group relative bg-gray-800/80 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl hover:shadow-emerald-600/20 hover:-translate-y-1 transition-all duration-300"
+    <>
+      {/* 🌿 Confirmation Dialog */}
+      {confirmId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md z-50 transition-all duration-300">
+          <div className="bg-gradient-to-b from-gray-900 via-black to-gray-900 border border-green-700/40 rounded-2xl p-6 shadow-[0_0_30px_rgba(34,197,94,0.2)] text-center max-w-sm w-full mx-4 animate-fadeIn">
+            <h3 className="text-red-400 font-semibold text-lg mb-3">
+              Confirm Deletion
+            </h3>
+            <p className="text-gray-300 text-sm mb-6">
+              Are you sure you want to delete this product? This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => handleDeleteConfirmed(confirmId)}
+                className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg shadow-md transition"
               >
-                <div className="relative h-52 w-full overflow-hidden rounded-t-2xl">
-                  <img
-                    src={imageUrl}
-                    alt={product.name || "Product"}
-                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => (e.target.src = "/placeholder.jpg")}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                </div>
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setConfirmId(null)}
+                className="bg-gray-800 border border-green-700 text-green-300 px-4 py-2 rounded-lg hover:bg-green-700/20 transition shadow-md"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-                <div className="p-5 text-left">
-                  <h2 className="text-xl font-bold text-emerald-400 mb-1">
+      {/* 🌱 Product List */}
+      <div className="bg-gradient-to-b from-gray-900 via-black to-gray-900 text-gray-100 p-6 border border-green-800/30 shadow-[0_0_30px_rgba(34,197,94,0.08)] backdrop-blur-md transition-all duration-300">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-extrabold text-center mb-10 text-green-400 tracking-wide drop-shadow-[0_0_8px_rgba(34,197,94,0.4)]">
+            🌿 Your Products
+          </h1>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => {
+              const imageUrl =
+                product.imageUrls?.[0] && product.imageUrls[0].startsWith("http")
+                  ? product.imageUrls[0]
+                  : "/placeholder.jpg";
+
+              const status = statusMap[product.productId];
+
+              return (
+                <div
+                  key={product.productId}
+                  className="bg-gray-900/90 border border-green-800/30 rounded-2xl p-4 shadow-[0_0_30px_rgba(34,197,94,0.08)] hover:scale-[1.03] transition-all duration-300"
+                >
+                  <div className="overflow-hidden rounded-xl mb-3">
+                    <img
+                      src={imageUrl}
+                      alt={product.name || "Product"}
+                      className="w-full h-48 object-cover hover:scale-110 transition-transform duration-500"
+                      onError={(e) => (e.target.src = "/placeholder.jpg")}
+                    />
+                  </div>
+
+                  <h2 className="text-2xl font-bold text-green-400 mb-1">
                     {product.name}
                   </h2>
-                  <p className="text-emerald-300/80 text-sm font-medium mb-2">
-                    Category: {product.category}
+                  <p className="text-gray-400 text-sm mb-1">
+                    <strong>Category:</strong> {product.category}
                   </p>
-
-                  <p className="text-gray-300 text-sm mb-3 leading-snug">
-                    {product.description?.length > 60
-                      ? `${product.description.substring(0, 60)}...`
+                  <p className="text-gray-400 text-sm mb-1">
+                    <strong>Description:</strong>{" "}
+                    {product.description?.length > 25
+                      ? `${product.description.substring(0, 25)}...`
                       : product.description}
                   </p>
-
-                  <p className="text-emerald-400 font-semibold mb-4">
-                    Quantity: {product.quantity} kg
+                  <p className="text-gray-400 text-sm mb-2">
+                    <strong>Address:</strong>{" "}
+                    {product.address?.length > 25
+                      ? `${product.address.substring(0, 25)}...`
+                      : product.address}
                   </p>
+
+                  <h2 className="text-lg font-semibold text-green-300 mb-3">
+                    Quantity: {product.quantity} kg
+                  </h2>
 
                   <div className="flex justify-between items-center">
                     <button
                       onClick={() => handleViewDetails(product.productId)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-5 rounded-lg font-semibold shadow-md hover:shadow-emerald-500/40 transition-all duration-300"
+                      className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition shadow-md"
                     >
                       View Details
                     </button>
+
                     <button
-                      onClick={() => handleDelete(product.productId)}
-                      className="bg-red-600 hover:bg-red-700 text-white py-2 px-5 rounded-lg font-semibold shadow-md hover:shadow-red-500/40 transition-all duration-300"
+                      disabled={status === "processing"}
+                      onClick={() => setConfirmId(product.productId)}
+                      className={`relative bg-red-800 border border-red-700 text-black-300 px-4 py-2 rounded-lg transition shadow-md overflow-hidden ${
+                        status === "processing"
+                          ? "opacity-70 cursor-wait"
+                          : "hover:bg-red-700/20"
+                      }`}
                     >
-                      Remove
+                      {status === "processing" && (
+                        <span className="animate-pulse text-red-400">
+                          Processing...
+                        </span>
+                      )}
+                      {status === "deleted" && (
+                        <span className="text-red-500">Deleted ✓</span>
+                      )}
+                      {status === "failed" && (
+                        <span className="text-red-400">Failed ✗</span>
+                      )}
+                      {!status && "Remove"}
                     </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
