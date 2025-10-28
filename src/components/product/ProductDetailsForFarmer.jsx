@@ -7,6 +7,7 @@ import ImageSlider from "../common/ImageSlider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import ImageEditDialog from "../common/ImageEditDialog";
+import { Send } from "lucide-react";
 
 const getRandomCoordinates = () => ({
   lat: 20 + Math.random() * 10,
@@ -30,6 +31,9 @@ const ProductDetailsForFarmer = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [userName, setUserName] = useState("");
+  // Add this new state with others:
+ const [showImageViewer, setShowImageViewer] = useState(false);
+
 
   // 🔹 Fetch Product Details
   useEffect(() => {
@@ -187,28 +191,11 @@ const ProductDetailsForFarmer = () => {
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-200 min-h-screen">
-      {/* Header */}
-      <header className="bg-gray-950 border-b border-green-600 p-4 flex items-center justify-between shadow-lg sticky top-0 z-40">
-        <h1 className="text-2xl font-extrabold tracking-wide text-green-400 mx-auto drop-shadow-lg">
-          PRODUCT DETAILS
-        </h1>
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2">
-            <FontAwesomeIcon icon={faUser} className="text-green-400 text-lg" />
-            <span className="font-semibold">{userName}</span>
-          </div>
-          <button
-            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl flex items-center space-x-2 transition duration-300 shadow-md"
-            onClick={handleLogout}
-          >
-            <FontAwesomeIcon icon={faSignOutAlt} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </header>
+    <div className="relative min-h-screen mt-10 text-gray-200 bg-gradient-to-br from-[#0b0c0f] via-[#121315] to-[#0a0b0d]">
+      {/* Subtle diagonal grey slash lighting overlay */}
+      <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.02)_0,rgba(255,255,255,0.02)_2px,transparent_2px,transparent_6px)] mix-blend-overlay pointer-events-none"></div>
 
-      <div className="p-8 space-y-10">
+      <div className="p-8 space-y-10 relative z-10">
         {/* 🔸 Update Product Modal */}
         {showUpdateModal && selectedProduct && (
           <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center z-50 overflow-y-auto">
@@ -240,18 +227,30 @@ const ProductDetailsForFarmer = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Product Details */}
           <div className="bg-gray-900 border border-gray-700 shadow-2xl rounded-2xl p-8 flex-1 flex flex-col lg:flex-row gap-8 transition duration-300">
+        
             {/* 🔹 Image Slider */}
-            <div className="relative w-full lg:w-[420px] h-[300px] rounded-2xl overflow-hidden shadow-md">
-              {Array.isArray(product.imageUrls) && product.imageUrls.length > 0 ? (
-                <ImageSlider images={product.imageUrls} />
-              ) : (
-                <img
-                  src="/placeholder.jpg"
-                  alt="No Image"
-                  className="w-full h-full object-cover opacity-80"
-                />
-              )}
-            </div>
+<div className="relative w-full lg:w-[420px] h-[300px] rounded-2xl overflow-hidden shadow-md">
+  {Array.isArray(product.imageUrls) && product.imageUrls.length > 0 ? (
+    <>
+      <ImageSlider images={product.imageUrls} />
+
+      {/* 🔸 View Button (bottom-left corner) */}
+      <button
+        onClick={() => setShowImageViewer(true)}
+        className="absolute bottom-3 left-3 bg-black/60 hover:bg-black/80 text-white text-xs px-3 py-1 rounded-lg shadow-md transition duration-300"
+      >
+        View
+      </button>
+    </>
+  ) : (
+    <img
+      src="/placeholder.jpg"
+      alt="No Image"
+      className="w-full h-full object-cover opacity-80"
+    />
+  )}
+</div>
+
 
             {/* 🔹 Product Info */}
             <div className="space-y-3 text-gray-300">
@@ -285,7 +284,7 @@ const ProductDetailsForFarmer = () => {
           </div>
 
           {/* Chat Box */}
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 flex flex-col flex-1 h-[400px] shadow-2xl">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 flex flex-col lg:w-[360px] h-[400px] shadow-2xl">
             <h2 className="text-lg font-bold text-green-400 mb-3">Live Chat</h2>
             <div className="flex-1 overflow-y-auto bg-gray-800 p-3 rounded-lg mb-3 space-y-2">
               {messages.map((msg, index) => (
@@ -314,9 +313,10 @@ const ProductDetailsForFarmer = () => {
               />
               <button
                 onClick={handleSendMessage}
-                className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-xl transition duration-300"
+                className="bg-green-700 hover:bg-green-800 text-white px-2.5 py-1.5 rounded-lg text-sm flex items-center gap-1.5 transition duration-300"
               >
-                Send
+                <Send size={14} className="text-white" />
+                <span className="hidden sm:inline">Send</span>
               </button>
             </div>
           </div>
@@ -338,16 +338,15 @@ const ProductDetailsForFarmer = () => {
               Return to Dashboard
             </button>
           </div>
-
           <div className="flex items-center gap-3">
             <input
               type="number"
               value={updatedQuantity}
               onChange={(e) => setUpdatedQuantity(e.target.value)}
-              className="bg-gray-800 border border-green-600 rounded-xl px-6 py-2 w-28 text-gray-200 focus:ring-2 focus:ring-green-600"
+              className="bg-gray-800 border border-green-600 text-white focus:ring-2 focus:ring-green-600 outline-none py-2 px-6 rounded-xl shadow-md transition duration-300"
             />
             <button
-              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl shadow-md transition duration-300"
+              className="bg-green-700 hover:bg-green-800 text-white py-2 px-6 rounded-xl shadow-md transition duration-300"
               onClick={handleQuantityUpdate}
             >
               Update Quantity
@@ -366,6 +365,29 @@ const ProductDetailsForFarmer = () => {
           ></div>
         </div>
       </div>
+      {/* 🔸 Fullscreen Image Viewer */}
+{showImageViewer && (
+  <div
+    className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-[100]"
+    onClick={() => setShowImageViewer(false)}
+  >
+    <div
+      className="relative w-[90%] max-w-4xl h-[80vh] bg-gray-900 rounded-2xl overflow-hidden"
+      onClick={(e) => e.stopPropagation()} // prevents accidental close
+    >
+      <button
+        onClick={() => setShowImageViewer(false)}
+        className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white rounded-full px-3 py-1 z-10"
+      >
+        ✕
+      </button>
+
+      {/* Fullscreen Slider */}
+      <ImageSlider images={product.imageUrls} />
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

@@ -17,6 +17,7 @@ import ProductDetailsForFarmer from "../components/product/ProductDetailsForFarm
 import FarmerRegistration from "../auth/FarmerRegistration";
 import FarmerSingIn from "../auth/FarmerSignIn";
 import FarmerSignIn from "../auth/FarmerSignIn";
+import FarmerAccount from "../components/farmer/FarmerAccount";
 
 const AllRoutes = () => {
   return (
@@ -35,8 +36,10 @@ const AllRoutes = () => {
         </Route>
 
         <Route path="/farmer" element={<Privaterouteadmin />}>
+
           <Route path="dashboard" element={<Admin />} />
           <Route path="product/details/:productId" element={<ProductDetailsForFarmer/>} />
+          <Route path="account" element={<FarmerAccount />} />
         </Route>
         <Route path="/register-user" element={<Registration />} />
         <Route path="/product/:productId" element={<SingleProduct />} />

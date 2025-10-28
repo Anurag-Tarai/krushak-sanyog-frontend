@@ -59,7 +59,7 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
       setTimeout(() => {
         setStatus("");
         onClose();
-      }, 1500);
+      }, 2000);
     } catch (error) {
       console.error("Error uploading images:", error);
       setStatus("❌ Failed to upload images. Please try again.");
@@ -83,8 +83,13 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
       );
 
       onUpdate(response.data);
-      setStatus("✅ Image removed successfully!");
-      setTimeout(() => setStatus(""), 1500);
+      setStatus("⛔ Image removed successfully!");
+    
+      setSelectedFiles([]);
+      setTimeout(() => {
+        setStatus("");
+        onClose();
+      }, 2000);
     } catch (error) {
       console.error("Error removing image:", error);
       setStatus("❌ Failed to remove image. Please try again.");
