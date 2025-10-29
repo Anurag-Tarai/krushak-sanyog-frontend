@@ -116,10 +116,10 @@ const AllProductFarmerContent = ({ refresh }) => {
     );
 
   return (
-    <div className="bg-black rounded-2xl border border-gray-800/60 backdrop-blur-md text-gray-200 relative">
+    <div className="bg-black rounded-2xl border border-gray-800/60 backdrop-blur-md text-gray-200 relative ">
       {/* 🌿 Confirmation Dialog */}
       {confirmId && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md z-50 transition-all duration-300 px-3 sm:px-0">
+        <div className="rounded-2xl fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md z-50 transition-all duration-300 px-3 sm:px-0">
           <div className="rounded-2xl bg-gray-900/80 border border-gray-800 p-6 w-full max-w-sm">
             <h3 className="text-red-400 font-semibold text-lg mb-3">
               Confirm Deletion

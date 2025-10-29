@@ -105,8 +105,8 @@ const FarmerDashBoard = () => {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="mt-10 lg:col-span-3  rounded-2xl bg-gray-900/40 border border-gray-800/60 
-                       shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
+            className="mt-10 lg:col-span-3 rounded-2xl bg-transparent border border-gray-800/60 
+shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
           >
             <AnimatePresence mode="wait">
               <motion.div

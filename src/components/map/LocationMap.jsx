@@ -3,7 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import useGeolocation from "../../hooks/useGeolocation";
 
-// Fix marker icons
+// ✅ Fix Leaflet marker path issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
@@ -11,59 +11,84 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-const LocationMap = ({ latitude, longitude }) => {
-  const { position, error } = useGeolocation();
-  const mapRef = useRef(null);     // DOM node for the map
-  const leafletMap = useRef(null); // Leaflet map instance
+const LocationMap = ({ latitude, longitude, onSelect }) => {
+  const { position } = useGeolocation();
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const markerRef = useRef(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    // --- Initialize map only once ---
-    if (!leafletMap.current && mapRef.current) {
-      leafletMap.current = L.map(mapRef.current, {
-        center: [20.5937, 78.9629], // default India center
+    // Initialize map once
+    if (!initialized.current && mapContainerRef.current) {
+      initialized.current = true;
+
+      // 🗺️ Setup map
+      mapRef.current = L.map(mapContainerRef.current, {
+        center: [20.5937, 78.9629],
         zoom: 5,
+        zoomControl: true,
       });
 
+      // 🧩 Add OSM tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-      }).addTo(leafletMap.current);
+      }).addTo(mapRef.current);
+
+      // 🖱️ Click handler to select location
+      mapRef.current.on("click", (e) => {
+        const { lat, lng } = e.latlng;
+        if (markerRef.current) {
+          markerRef.current.setLatLng([lat, lng]);
+        } else {
+          markerRef.current = L.marker([lat, lng]).addTo(mapRef.current);
+        }
+        mapRef.current.flyTo([lat, lng], 15, { duration: 0.6 });
+        if (onSelect) onSelect({ lat, lng });
+      });
     }
+  }, [onSelect]);
 
-    // --- When coordinates available, fly to location ---
-    const lat = latitude || position?.latitude;
-    const lng = longitude || position?.longitude;
-
-    if (lat && lng && leafletMap.current) {
-      leafletMap.current.setView([lat, lng], 13);
-
-      L.marker([lat, lng])
-        .addTo(leafletMap.current)
-        .bindPopup(
-          `📍 Location<br/>Lat: ${lat.toFixed(4)}<br/>Lng: ${lng.toFixed(4)}`
-        )
-        .openPopup();
-    }
-
-    // --- Cleanup on unmount ---
-    return () => {
-      if (leafletMap.current) {
-        leafletMap.current.remove();
-        leafletMap.current = null;
+  // 📍 Center to user's position initially
+  useEffect(() => {
+    if (position && mapRef.current) {
+      const { latitude: lat, longitude: lng } = position;
+      mapRef.current.flyTo([lat, lng], 13, { duration: 0.8 });
+      if (!markerRef.current) {
+        markerRef.current = L.marker([lat, lng])
+          .addTo(mapRef.current)
+          .bindPopup("📍 Your Location")
+          .openPopup();
+      } else {
+        markerRef.current.setLatLng([lat, lng]);
       }
-    };
-  }, [latitude, longitude, position]);
+    }
+  }, [position]);
 
-  if (error) return <p className="text-red-500">Error: {error}</p>;
+  // 🎯 External coordinate update
+  useEffect(() => {
+    if (latitude && longitude && mapRef.current) {
+      const newLatLng = L.latLng(latitude, longitude);
+      if (!markerRef.current) {
+        markerRef.current = L.marker(newLatLng)
+          .addTo(mapRef.current)
+          .bindPopup("📍 Selected Location")
+          .openPopup();
+      } else {
+        markerRef.current.setLatLng(newLatLng);
+      }
+      mapRef.current.flyTo(newLatLng, 15, { duration: 0.6 });
+    }
+  }, [latitude, longitude]);
 
   return (
     <div
-      ref={mapRef}
+      ref={mapContainerRef}
+      className="w-full h-[400px] rounded-xl overflow-hidden border border-gray-700 shadow-md"
       style={{
-        height: "400px",
-        width: "100%",
-        borderRadius: "12px",
-        overflow: "hidden",
+        cursor: "grab",
+        touchAction: "auto",
       }}
     />
   );
