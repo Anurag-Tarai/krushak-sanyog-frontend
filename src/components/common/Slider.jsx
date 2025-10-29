@@ -1,50 +1,98 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "../../styles/components/Slider.css";
 
-const Slider = ({ images, interval = 5000 }) => {
+/**
+ * Dark & Grey Image Slider
+ * - Left thumbnails (no scrollbar)
+ * - Fixed aspect ratio main image
+ * - No auto-slide
+ * - Smooth fade + scale animation
+ */
+
+const ImageSlider = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const validInterval = Math.max(interval, 100);
-    const slideInterval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, validInterval);
-
-    return () => clearInterval(slideInterval);
-  }, [images, interval]);
+  if (!images || images.length === 0) {
+    return (
+      <div className="w-full h-[360px] bg-gray-800 flex items-center justify-center text-gray-500 rounded-xl">
+        No Images
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] flex items-center justify-center overflow-hidden
-                 rounded-3xl bg-gradient-to-tl from-[#010402] via-[#031d10] to-[#041f14]
-                 border border-green-900/40 shadow-[0_0_60px_rgba(34,197,94,0.22)]
-                 transition-all duration-700 hover:shadow-[0_0_90px_rgba(34,197,94,0.35)]"
-    >
-      {/* 🌌 Ambient gradient glow */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-green-900/15 via-transparent to-black/80 opacity-80 pointer-events-none rounded-3xl" />
+    <div className="relative flex items-center gap-5">
+      {/* LEFT THUMBS - hidden on small screens */}
+      <div className="hidden md:flex flex-col gap-3">
+        {images.map((img, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentIndex(i)}
+            className={`w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 transition-all transform ${
+              i === currentIndex ? "scale-105 border border-gray-700" : "opacity-80 hover:opacity-95"
+            }`}
+            aria-label={`View image ${i + 1}`}
+          >
+            <img src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" draggable={false} />
+          </button>
+        ))}
+      </div>
 
-      {/* 🌿 Subtle top glow for depth */}
-      <div className="absolute top-[-60px] right-1/3 w-[480px] h-[300px] bg-green-500/10 blur-[120px] rounded-full" />
+      {/* MAIN IMAGE */}
+      <div className="relative flex-1 bg-gray-900 rounded-xl overflow-hidden" style={{ minHeight: 360 }}>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
 
-      {/* 🎞️ Enhanced slow & deeper fade animation */}
-      <AnimatePresence mode="wait">
-        <motion.img
-          key={currentIndex}
-          src={images[currentIndex]}
-          alt={`Slide ${currentIndex}`}
-          initial={{ opacity: 0, scale: 1.02, filter: "brightness(0.6)" }}
-          animate={{ opacity: 1, scale: 1, filter: "brightness(1) " }}
-          exit={{ opacity: 0, scale: 0.98, filter: "brightness(0.5)" }}
-          transition={{
-            duration: 3.6, // ⏳ slower, smoother fade
-            ease: [0.33, 0.02, 0.16, 0.97],
-          }}
-          className="absolute w-auto max-w-full h-full object-contain drop-shadow-[0_25px_45px_rgba(0,0,0,0.55)]"
-        />
-      </AnimatePresence>
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentIndex}
+            src={images[currentIndex]}
+            alt={`slide-${currentIndex}`}
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.03 }}
+            transition={{ duration: 0.45, ease: "easeInOut" }}
+            className="w-full h-[360px] object-contain bg-gray-900"
+            draggable={false}
+          />
+        </AnimatePresence>
+
+        {/* nav arrows */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentIndex((p) => (p === 0 ? images.length - 1 : p - 1))}
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-800/80 text-gray-100 rounded-full p-2"
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+
+            <button
+              onClick={() => setCurrentIndex((p) => (p + 1) % images.length)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-800/80 text-gray-100 rounded-full p-2"
+              aria-label="Next image"
+            >
+              ›
+            </button>
+          </>
+        )}
+
+        {/* dots */}
+        {images.length > 1 && (
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentIndex(i)}
+                className={`w-2.5 h-2.5 rounded-full ${i === currentIndex ? "bg-gray-200" : "bg-gray-600"}`}
+                aria-label={`Go to image ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default Slider;
+export default ImageSlider;

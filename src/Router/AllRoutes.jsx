@@ -13,9 +13,8 @@ import NotFound from "../components/common/NotFound";
 import AuctionProducts from "../pages/AuctionProducts";
 import AuctionPage from "../pages/AuctionPage";
 import UserProfile from "../pages/UserProfile";
-import ProductDetailsForFarmer from "../components/product/ProductDetailsForFarmer";
+import ProductDetailsForFarmer from "../components/farmer/ProductDetailsForFarmer";
 import FarmerRegistration from "../auth/FarmerRegistration";
-import FarmerSingIn from "../auth/FarmerSignIn";
 import FarmerSignIn from "../auth/FarmerSignIn";
 import FarmerAccount from "../components/farmer/FarmerAccount";
 

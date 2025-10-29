@@ -1,109 +1,101 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ImageSlider = ({ images = [] }) => {
-  // ✅ All hooks first
-  const [current, setCurrent] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadedImages, setLoadedImages] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // ✅ Only run if there are images
-  useEffect(() => {
-    if (!images.length) return;
-
-    let mounted = true;
-    setIsLoading(true);
-
-    const img = new Image();
-    img.src = images[current];
-    img.onload = () => {
-      if (!mounted) return;
-      setLoadedImages((prev) => ({ ...prev, [current]: true }));
-      setIsLoading(false);
-    };
-    img.onerror = () => {
-      if (!mounted) return;
-      setLoadedImages((prev) => ({ ...prev, [current]: false }));
-      setIsLoading(false);
-    };
-
-    return () => {
-      mounted = false;
-    };
-  }, [current, images]);
-
-  // ✅ Early return AFTER all hooks declared
-  if (!images || images.length === 0) return null;
-
-  const nextSlide = () => {
-    setIsLoading(true);
-    setCurrent((prev) => (prev + 1) % images.length);
-  };
-
-  const prevSlide = () => {
-    setIsLoading(true);
-    setCurrent((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  const currentImageLoaded = !!loadedImages[current];
+  if (!images || images.length === 0)
+    return (
+      <div className="w-full h-[300px] bg-gray-800 flex items-center justify-center text-gray-500 rounded-xl">
+        No Images
+      </div>
+    );
 
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-xl">
-      {/* 🌿 Loading overlay until next image fully loads */}
-      <div className="relative w-full h-full">
-        {!currentImageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white text-sm animate-pulse z-10">
-            Loading image...
-          </div>
-        )}
-
-        <img
-          src={images[current]}
-          alt={`Slide ${current + 1}`}
-          loading="lazy"
-          className={`w-full h-full object-cover rounded-xl transition-all duration-700 ease-in-out ${
-            isLoading ? "opacity-0 scale-95" : "opacity-100 scale-100"
-          }`}
-          onLoad={() => setIsLoading(false)}
-          onError={(e) => {
-            e.target.src = "/placeholder.jpg";
-            setIsLoading(false);
-          }}
-        />
+    <div className="relative flex items-center gap-4">
+      {/* LEFT THUMBNAILS (no scroll) */}
+      <div className="hidden md:flex flex-col gap-2">
+        {images.map((img, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentIndex(i)}
+            className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all focus:outline-none ${
+              i === currentIndex
+                ? "ring-2 ring-green-500 scale-105"
+                : "opacity-80 hover:opacity-100"
+            }`}
+            aria-label={`View image ${i + 1}`}
+          >
+            <img
+              src={img}
+              alt={`thumb-${i}`}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          </button>
+        ))}
       </div>
 
-      {/* Controls */}
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition"
-          >
-            ❮
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition"
-          >
-            ❯
-          </button>
+      {/* MAIN IMAGE */}
+      <div className="relative w-full h-[300px] aspect-[4/3] flex items-center justify-center overflow-hidden rounded-xl bg-gray-900">
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentIndex}
+            src={images[currentIndex]}
+            alt={`slide-${currentIndex}`}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="w-full h-full object-contain"
+            draggable={false}
+          />
+        </AnimatePresence>
 
-          {/* Dots */}
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-            {images.map((_, index) => (
-              <div
-                key={index}
-                onClick={() => {
-                  setIsLoading(true);
-                  setCurrent(index);
-                }}
-                className={`w-2 h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                  index === current ? "bg-white" : "bg-white/40"
+        {/* Navigation Buttons */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={() =>
+                setCurrentIndex((prev) =>
+                  prev === 0 ? images.length - 1 : prev - 1
+                )
+              }
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 backdrop-blur-md"
+              aria-label="Previous image"
+            >
+              ‹
+            </button>
+            <button
+              onClick={() =>
+                setCurrentIndex((prev) => (prev + 1) % images.length)
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 backdrop-blur-md"
+              aria-label="Next image"
+            >
+              ›
+            </button>
+          </>
+        )}
+
+        {/* Dot indicators */}
+        {images.length > 1 && (
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentIndex(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  i === currentIndex
+                    ? "bg-green-500 scale-110"
+                    : "bg-gray-600 hover:bg-gray-500"
                 }`}
-              ></div>
+                aria-label={`Go to image ${i + 1}`}
+              />
             ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };

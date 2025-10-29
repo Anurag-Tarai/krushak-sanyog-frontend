@@ -1,14 +1,16 @@
-// src/components/farmer/ImageEditDialog.jsx
 import React, { useState } from "react";
 import api from "../../Router/api";
+import MessageToast from "../common/MessageToast"; // ✅ Import your reusable toast
+import { X } from "lucide-react";
+import { createPortal } from "react-dom";
+
 
 const MAX_IMAGES = 5;
 
 const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [status, setStatus] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "", status: "info" });
 
   // 🔹 Handle file selection
   const handleFileSelect = (e) => {
@@ -17,12 +19,15 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
       (product.imageUrls?.length || 0) + selectedFiles.length + newFiles.length;
 
     if (totalImages > MAX_IMAGES) {
-      setError(`❌ Max ${MAX_IMAGES} images allowed (including existing ones).`);
+      setToast({
+        show: true,
+        message: `Max ${MAX_IMAGES} images allowed (including existing ones).`,
+        status: "warning",
+      });
       e.target.value = "";
       return;
     }
 
-    setError("");
     setSelectedFiles((prev) => [...prev, ...newFiles]);
     e.target.value = "";
   };
@@ -30,17 +35,20 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
   // 🔹 Upload New Images
   const handleImageUpload = async () => {
     if (selectedFiles.length === 0) {
-      setError("Please select at least one image to upload.");
+      setToast({
+        show: true,
+        message: "Please select at least one image to upload.",
+        status: "warning",
+      });
       return;
     }
 
-    setError("");
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append("images", file));
 
     try {
       setLoading(true);
-      setStatus("⏳ Uploading images... Please wait.");
+      setToast({ show: true, message: "⏳ Uploading images...", status: "processing" });
 
       const response = await api.post(
         `/api/v1/products/${productId}/images`,
@@ -54,15 +62,21 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
       );
 
       onUpdate(response.data);
-      setStatus("✅ Images uploaded successfully!");
       setSelectedFiles([]);
-      setTimeout(() => {
-        setStatus("");
-        onClose();
-      }, 2000);
+      setToast({
+        show: true,
+        message: "Images uploaded successfully!",
+        status: "success",
+      });
+
+      // setTimeout(onClose, 2000);
     } catch (error) {
       console.error("Error uploading images:", error);
-      setStatus("❌ Failed to upload images. Please try again.");
+      setToast({
+        show: true,
+        message: "Failed to upload images. Please try again.",
+        status: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -72,7 +86,7 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
   const handleImageRemove = async (imageUrl) => {
     try {
       setLoading(true);
-      setStatus("⏳ Removing image... Please wait.");
+      setToast({ show: true, message: "Removing image...", status: "processing" });
 
       const encodedUrl = encodeURIComponent(imageUrl);
       const response = await api.delete(
@@ -83,22 +97,26 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
       );
 
       onUpdate(response.data);
-      setStatus("⛔ Image removed successfully!");
-    
-      setSelectedFiles([]);
-      setTimeout(() => {
-        setStatus("");
-        onClose();
-      }, 2000);
+      setToast({
+        show: true,
+        message: "Image removed successfully!",
+        status: "success",
+      });
+
+      // setTimeout(onClose, 2000);
     } catch (error) {
       console.error("Error removing image:", error);
-      setStatus("❌ Failed to remove image. Please try again.");
+      setToast({
+        show: true,
+        message: "Failed to remove image. Please try again.",
+        status: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Remove file before upload (locally)
+  // 🔹 Remove selected image locally before upload
   const handleRemoveSelected = (index) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
@@ -107,7 +125,17 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-6">
-      <div className="bg-gray-900 text-gray-100 rounded-2xl p-6 shadow-2xl w-full max-w-lg border border-gray-800">
+      <div className="bg-gray-900 text-gray-100 rounded-2xl p-6 shadow-2xl w-full max-w-lg border border-gray-800 relative">
+        
+        {/* 🔹 Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-red-500 hover:scale-110 transition-all duration-200 text-xl font-bold"
+          title="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         <h2 className="text-2xl font-bold text-green-400 mb-5 text-center tracking-wide">
           Edit Product Images
         </h2>
@@ -121,15 +149,10 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
           multiple
           accept="image/*"
           onChange={handleFileSelect}
-          className="w-full text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg p-2 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-green-600 file:text-white file:hover:bg-green-500"
+          className="w-full text-sm text-gray-300 bg-gray-800 border border-gray-700 rounded-lg p-2 
+          file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-green-600 
+          file:text-white file:hover:bg-green-500"
         />
-
-        {/* Error Message */}
-        {error && (
-          <div className="text-red-400 text-sm text-center font-medium mt-2">
-            {error}
-          </div>
-        )}
 
         {/* Selected File Count */}
         {selectedFiles.length > 0 && (
@@ -189,21 +212,6 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
           </button>
         </div>
 
-        {/* Status Message */}
-        {status && (
-          <div
-            className={`text-center text-sm font-medium mt-4 ${
-              status.includes("✅")
-                ? "text-green-400"
-                : status.includes("❌")
-                ? "text-red-400"
-                : "text-yellow-400"
-            }`}
-          >
-            {status}
-          </div>
-        )}
-
         {/* Existing Images */}
         <h3 className="text-md font-semibold text-gray-300 mt-6 mb-2">
           Existing Images ({product.imageUrls?.length || 0}/{MAX_IMAGES})
@@ -230,6 +238,18 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
             </div>
           ))}
         </div>
+
+        {/* ✅ Message Toast */}
+       {createPortal(
+  <MessageToast
+    show={toast.show}
+    onClose={() => setToast({ ...toast, show: false })}
+    message={toast.message}
+    status={toast.status}
+  />,
+  document.body
+)}
+
       </div>
     </div>
   );

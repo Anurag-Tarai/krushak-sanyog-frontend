@@ -39,13 +39,11 @@ const Navbar = () => {
 
   return (
     <nav
-      className="fixed top-0 left-0 w-full z-[9999] backdrop-blur-xl border-b border-green-800/20 
-                 bg-[#020b06]/95 shadow-[0_0_25px_rgba(0,0,0,0.4)]"
+      className="fixed top-0 left-0 w-full z-[9999]
+                 bg-gray-900/50 backdrop-blur-md border-b border-gray-800/60
+                 shadow-[0_0_25px_rgba(255,255,255,0.05)]"
     >
-      {/* 🌿 Subtle green gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-700/10 to-transparent pointer-events-none" />
-
-      {/* 🌱 Thin glowing line under navbar */}
+      {/* 💚 Thin glowing green divider */}
       <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-green-500/50 to-transparent blur-[1px]" />
 
       <div className="flex items-center justify-between h-16 px-4 md:px-10 relative z-10">
@@ -57,9 +55,9 @@ const Navbar = () => {
           <div className="h-10 w-36 flex items-center justify-center rounded-md bg-transparent">
             <img
               src={appLogo}
-              alt="Farmer Connect"
-              className="h-full w-full object-cover brightness-110 contrast-110 
-                         drop-shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+              alt="App Logo"
+              className="h-28 w-full object-contain brightness-110 contrast-110 
+                         drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]"
             />
           </div>
         </h3>
@@ -88,7 +86,7 @@ const Navbar = () => {
               <button
                 onClick={() => navigate("/user/profile")}
                 className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
-                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
+                           hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
               >
                 <FontAwesomeIcon icon={faUser} className="mr-2 text-green-400/80" />
                 {name}
@@ -106,7 +104,7 @@ const Navbar = () => {
             <button
               onClick={handleLoginClick}
               className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
-                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
+                         hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
             >
               <FontAwesomeIcon icon={faUser} className="mr-2 text-green-400/80" />
               Signin
@@ -117,7 +115,7 @@ const Navbar = () => {
             <button
               onClick={handleFarmerClick}
               className="relative hover:text-green-400 transition duration-300 after:content-[''] after:block after:w-0 
-                       hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
+                         hover:after:w-full after:h-[1px] after:bg-green-400 after:transition-all after:duration-300"
             >
               Signin As Farmer
             </button>
@@ -127,8 +125,8 @@ const Navbar = () => {
         {/* 📱 Mobile Menu Toggle */}
         <button
           onClick={toggleMenu}
-          className="md:hidden bg-green-900/10 hover:bg-green-800/20 text-green-400 text-2xl p-2 rounded-lg 
-                     shadow-[0_0_12px_rgba(34,197,94,0.3)] transition duration-300"
+          className="md:hidden bg-gray-800/40 hover:bg-gray-700/40 text-green-400 text-2xl p-2 rounded-lg 
+                     shadow-[0_0_10px_rgba(34,197,94,0.3)] transition duration-300"
         >
           {isMenuOpen ? (
             <FontAwesomeIcon icon={faTimes} />
@@ -141,8 +139,8 @@ const Navbar = () => {
       {/* 📲 Mobile Menu */}
       {isMenuOpen && (
         <div
-          className="md:hidden bg-[#010805]/95 border-t border-green-900/40 text-gray-100 flex flex-col space-y-3 p-4 
-                     shadow-[0_0_25px_rgba(34,197,94,0.2)]"
+          className="md:hidden bg-gray-900/70 backdrop-blur-md border-t border-gray-800/60 text-gray-100 
+                     flex flex-col space-y-3 p-4 shadow-[0_0_20px_rgba(34,197,94,0.1)]"
         >
           <button
             onClick={handleProductsClick}
