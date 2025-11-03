@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import MessageToast from "../components/common/MessageToast";
 
 const initialFormData = {
-  email: "",
-  password: "",
-};
-
-const initialErrors = {
   email: "",
   password: "",
 };
@@ -15,8 +11,16 @@ const initialErrors = {
 const FarmerSignIn = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialFormData);
-  const [errors, setErrors] = useState(initialErrors);
-  const [status, setStatus] = useState("");
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    status: "info",
+  });
+
+  const showToast = (message, status = "info") => {
+    setToast({ show: true, message, status });
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -34,7 +38,7 @@ const FarmerSignIn = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const setHandlerChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
     setErrors({ ...errors, [name]: "" });
@@ -45,73 +49,54 @@ const FarmerSignIn = () => {
     if (!validateForm()) return;
 
     try {
-      setStatus("Processing...");
+      showToast("Processing login...", "info");
       const role = "ROLE_FARMER";
-      const response = await axios.post(
+      const res = await axios.post(
         "http://localhost:8080/api/v1/auth/login",
-        { email: form.email, password: form.password, role },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "*/*",
-          },
-        }
+        { ...form, role },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      const { token, userId, name } = response.data;
+      const { token, userId, name } = res.data;
 
       if (token) {
-        setStatus("Signed in successfully ✅");
         localStorage.setItem("jwtToken", token);
         localStorage.setItem("farmerId", userId);
         localStorage.setItem("name", name || "Farmer");
         localStorage.setItem("role", "farmer");
 
-        setTimeout(() => {
-          setStatus("Redirecting...");
-        }, 1000);
+        showToast("Signed in successfully ✅", "success");
 
-        setTimeout(() => {
-          navigate("/farmer/dashboard");
-        }, 2000);
+        setTimeout(() => navigate("/farmer/dashboard"), 1500);
       } else {
-        setStatus("Failed ❌");
-        alert("Invalid credentials or missing token.");
+        showToast("Invalid credentials or missing token.", "error");
       }
     } catch (error) {
-      setStatus("Failed ❌");
       if (error.response?.status === 401)
-        alert("Invalid credentials. Please try again.");
+        showToast("Invalid credentials. Please try again.", "error");
       else if (error.response?.status === 403)
-        alert("Access denied. You are not a farmer.");
-      else if (error.response?.status === 502)
-        alert("Server error: You are not a Farmer.");
-      else alert("Error during login. Please try again later.");
+        showToast("Access denied. You are not a farmer.", "error");
+      else showToast("Server error. Please try again later.", "error");
     }
   };
 
-  // 🔄 Auto-hide status after 4 seconds (like toggle)
-  useEffect(() => {
-    if (status) {
-      const timer = setTimeout(() => setStatus(""), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
-
-  const { email, password } = form;
+  // ⚡ Handle Google Sign-in (coming soon)
+  const handleGoogleSignIn = () => {
+    showToast("Google sign-in under development", "info");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-black text-white px-4 relative">
-      <h2 className="text-3xl font-bold mb-6 tracking-wide bg-gradient-to-r from-green-400 to-green-200 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]">
-        Welcome, Farmer 🌾
-      </h2>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0c] text-gray-100 px-4">
+      <div className="w-full max-w-md bg-gray-900/40 border border-[#2a2a2a] rounded-2xl backdrop-blur-xl shadow-lg p-8 custom-scrollbar">
+        <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">
+          Welcome, Farmer 🌾
+        </h2>
 
-      <div className="w-full max-w-md bg-gray-900/80 border border-green-800/40 backdrop-blur-lg rounded-2xl shadow-[0_0_25px_rgba(34,197,94,0.15)] p-8 transition-all duration-300 hover:shadow-[0_0_35px_rgba(34,197,94,0.25)]">
         <form onSubmit={submitHandler} className="space-y-5">
           <div>
             <label
               htmlFor="email"
-              className="block text-green-300 font-medium mb-1"
+              className="block text-sm font-medium text-gray-300 mb-1"
             >
               Email
             </label>
@@ -119,10 +104,10 @@ const FarmerSignIn = () => {
               id="email"
               type="email"
               name="email"
-              value={email}
-              onChange={setHandlerChange}
-              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              value={form.email}
+              onChange={handleChange}
               placeholder="Enter your email"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
             {errors.email && (
               <span className="text-red-400 text-sm mt-1 block">
@@ -134,7 +119,7 @@ const FarmerSignIn = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-green-300 font-medium mb-1"
+              className="block text-sm font-medium text-gray-300 mb-1"
             >
               Password
             </label>
@@ -142,10 +127,10 @@ const FarmerSignIn = () => {
               id="password"
               type="password"
               name="password"
-              value={password}
-              onChange={setHandlerChange}
-              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              value={form.password}
+              onChange={handleChange}
               placeholder="Enter your password"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
             {errors.password && (
               <span className="text-red-400 text-sm mt-1 block">
@@ -156,46 +141,51 @@ const FarmerSignIn = () => {
 
           <button
             type="submit"
-            className="w-full py-2 mt-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 hover:scale-[1.02]"
+            className="w-full py-2 mt-2 bg-green-700/60 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-200"
           >
             Sign In
           </button>
+
+          {/* 🔹 Divider */}
+          <div className="flex items-center my-4">
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+            <span className="mx-3 text-gray-500 text-sm">or</span>
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+          </div>
+
+          {/* 🔹 Google Sign-In (Coming Soon) */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full py-2 flex items-center justify-center gap-3 bg-gray-900/60 border border-[#2f2f2f] hover:border-emerald-500/40 rounded-lg text-gray-200 hover:text-emerald-300 transition-all duration-200"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            Sign in with Google
+          </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-green-200">
+        <p className="mt-6 text-center text-sm text-gray-400">
           Don’t have an account?{" "}
           <Link
             to="/farmer/signup"
-            className="text-green-400 hover:underline hover:text-green-300 transition"
+            className="text-emerald-400 hover:underline hover:text-emerald-300 transition"
           >
             Signup here
           </Link>
         </p>
       </div>
 
-      {/* ✅ Floating status message like toggle */}
-      {status && (
-        <div className="fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-lg text-sm font-medium text-green-100 bg-gray-900/80 border border-green-700/40 backdrop-blur-md transition-all duration-500 animate-fade-in-out">
-          {status}
-        </div>
-      )}
-
-      {/* ✅ Simple fade animation */}
-      <style>{`
-        @keyframes fadeInOut {
-          0%, 100% {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          10%, 90% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-out {
-          animation: fadeInOut 4s ease-in-out forwards;
-        }
-      `}</style>
+      {/* ✅ Shared toast system */}
+      <MessageToast
+        show={toast.show}
+        message={toast.message}
+        status={toast.status}
+         onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

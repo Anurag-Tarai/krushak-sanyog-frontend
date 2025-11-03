@@ -1,12 +1,17 @@
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import Farmer1 from "../assets/farmer/HomeLogo2.png";
 
 const Home = () => {
   const missionRef = useRef(null);
   const { scrollYProgress } = useScroll();
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
+  const opacity = useTransform(scrollYProgress, [0, 0.15], [1, 0.85]);
+  const scale = useTransform(scrollYProgress, [0, 0.15], [1, 0.97]);
+
+  // Detect when each section is visible
+  const heroRef = useRef(null);
+  const missionInView = useInView(missionRef, { amount: 0.3 });
+  const heroInView = useInView(heroRef, { amount: 0.3 });
 
   const handleSmoothScroll = () => {
     const targetY =
@@ -16,176 +21,131 @@ const Home = () => {
   };
 
   return (
-    <div className="relative bg-gradient-to-br from-[#0a0f0a] via-[#0d1410] to-[#061008] text-gray-100 min-h-screen flex flex-col justify-between pt-20 overflow-hidden">
-      {/* 🌌 Background mesh (no green glow) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* ❌ Removed green glowing circles */}
-
-        {/* Subtle grid overlay for depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[length:40px_40px]" />
-      </div>
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-[#0b0b0b] text-gray-100 overflow-hidden">
+      {/* 🩶 Subtle grid overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[length:60px_60px] pointer-events-none" />
 
       {/* 🌾 Hero Section */}
-      <motion.div
-        style={{ opacity, scale }}
-        className="relative overflow-hidden rounded-[2rem] shadow-[0_0_60px_rgba(0,0,0,0.3)] 
-                   border border-gray-800/40 mx-4 lg:mx-10 backdrop-blur-xl bg-gradient-to-br from-gray-900/30 via-gray-900/20 to-green-950/20
-                   flex flex-col lg:flex-row-reverse items-center justify-between group"
-        whileHover={{
-          y: -4,
-          boxShadow: "0 0 80px rgba(0,0,0,0.4)",
-          transition: { duration: 0.6, ease: "easeOut" },
+      <motion.section
+        ref={heroRef}
+        style={{
+          opacity: heroInView ? 1 : 0,
+          scale,
+          transition: "opacity 0.6s ease, transform 0.6s ease",
         }}
+        className="relative w-full max-w-7xl px-4 sm:px-6 md:px-10 lg:px-16 pt-24 md:pt-28 pb-12 md:pb-16 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-10"
       >
-        {/* 🖼️ Image on Right */}
-        <div className="relative flex-shrink-0 w-full lg:w-1/2 overflow-hidden group">
-          {/* Sharp transparent → green diagonal background */}
+        {/* 🖼️ Image */}
+        <motion.div
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="relative w-full lg:w-[48%] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.2)]"
+        >
           <div
-            className="absolute inset-0 lg:rounded-none lg:rounded-r-[2rem] rounded-[2rem] pointer-events-none z-0"
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: `
-                linear-gradient(135deg,
-                  transparent 0%,
-                  transparent 60%,
-                  rgba(0,128,0,0.85) 60%,
-                  rgba(0,128,0,0.85) 100%)
-              `,
+              background:
+                "linear-gradient(135deg, transparent 0%, transparent 60%, rgba(16,185,129,0.8) 0%, rgba(16,185,129,0.8) 100%)",
             }}
           />
-
           <motion.img
             src={Farmer1}
             alt="Farmer Connect"
-            whileHover={{ scale: 1.05 }}
+            className="w-full h-[35vh] sm:h-[42vh] md:h-[50vh] object-cover object-[40%_center] rounded-2xl relative z-[1]"
+            whileHover={{ scale: 1.04 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative z-10 w-full h-[50vh] object-cover rounded-[2rem] lg:rounded-none lg:rounded-r-[2rem]"
           />
+        </motion.div>
 
-          {/* Accent border */}
-          <div className="absolute inset-0 z-20 rounded-[2rem] lg:rounded-none lg:rounded-r-[2rem] transition-all duration-700" />
-        </div>
-
-        {/* ✨ Text on Left */}
-        <div className="relative flex flex-col items-center lg:items-start justify-center text-center lg:text-left p-8 lg:p-14 w-full lg:w-1/2 space-y-6">
+        {/* ✨ Text */}
+        <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 md:space-y-5 w-full lg:w-[48%]">
           <motion.h1
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 35 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="text-5xl md:text-7xl font-extrabold bg-gradient-to-r from-gray-400 via-gray-400 to-gray-400 
-                       bg-clip-text text-transparent tracking-tight relative"
+            transition={{ duration: 0.9 }}
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-gray-50 group relative inline-block"
           >
-            Farmer Connect
-            <motion.span
-              className="absolute -bottom-2 left-0 lg:left-0 right-0 lg:right-auto h-[3px] bg-gradient-to-r from-green-400/80 via-emerald-500/60 to-transparent rounded-full"
-              initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
-            />
+            <span
+              className="relative inline-block pb-1
+                before:content-['']
+                before:absolute before:left-1/2 before:bottom-0
+                before:h-[2px] before:w-0
+                before:bg-gradient-to-r before:from-emerald-400 before:to-green-500
+                before:transition-all before:duration-500 before:ease-out
+                group-hover:before:left-0 group-hover:before:w-full"
+            >
+              Farmer Connect
+            </span>
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.3 }}
-            className="text-base md:text-xl text-gray-300/90 max-w-2xl leading-relaxed font-light"
-          >
-            Bridging the gap between{" "}
-            <span className="text-green-400 font-semibold">farmers</span> and{" "}
-            <span className="text-green-400 font-semibold">buyers</span> — fostering trust, sustainability, and growth.
-          </motion.p>
+          <p className="text-sm sm:text-base md:text-lg text-gray-400 max-w-md leading-relaxed font-light">
+            A platform that connects{" "}
+            <span className="text-emerald-400 font-medium">farmers</span> and{" "}
+            <span className="text-emerald-400 font-medium">buyers</span> through
+            transparency, trust, and technology.
+          </p>
 
           <motion.button
             onClick={handleSmoothScroll}
-            whileHover={{
-              scale: 1.06,
-            }}
+            whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="relative mt-2 px-10 py-4 rounded-2xl bg-gradient-to-r from-green-800 to-green-800 hover:from-green-700 hover:to-green-700
-                       text-white text-base font-semibold overflow-hidden transition-all duration-300"
+            className="mt-1 px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl bg-green-800/80 hover:bg-green-700 text-white font-medium transition-all duration-300 text-sm sm:text-base"
           >
-            <span className="relative z-10">Get Started</span>
+            Get Started
           </motion.button>
         </div>
-      </motion.div>
+      </motion.section>
 
       {/* 🌱 Mission Section */}
       <motion.section
         ref={missionRef}
-        initial={{ opacity: 0, y: 60 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className="mt-32 text-center px-6 md:px-16 lg:px-40 scroll-mt-24"
+        style={{
+          opacity: missionInView ? 1 : 0,
+          transition: "opacity 0.6s ease",
+        }}
+        initial={{ y: 45 }}
+        animate={{ y: 0 }}
+        className="w-full max-w-5xl px-4 sm:px-8 md:px-12 text-center mt-12 md:mt-16"
       >
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.5 }}
-          className="backdrop-blur-sm bg-gray-900/10 border border-gray-800/30 rounded-3xl p-10 md:p-14 shadow-[0_0_50px_rgba(0,0,0,0.15)]"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold bg-green-500 bg-clip-text text-transparent mb-6">
-            Empowering Local Farmers
-          </h2>
-          <motion.div
-            className="w-24 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent mx-auto mb-8 rounded-full"
-            initial={{ width: 0 }}
-            whileInView={{ width: "6rem" }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, delay: 0.3 }}
-          />
-          <p className="text-gray-300/90 leading-relaxed text-base md:text-xl max-w-3xl mx-auto font-light">
-            Our mission is simple — to create a fair, transparent, and community-driven
-            platform where farmers can showcase their produce and buyers can access
-            authentic, sustainable goods directly from the source.
-          </p>
-        </motion.div>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-50 mb-4 md:mb-5">
+          Empowering Local Farmers
+        </h2>
+        <p className="text-gray-400 text-sm sm:text-base md:text-lg leading-relaxed max-w-3xl mx-auto font-light">
+          Our mission is to empower the agricultural community by simplifying access
+          to markets, enabling fair trade, and fostering sustainability through digital
+          innovation.
+        </p>
       </motion.section>
 
       {/* 🌍 CTA Section */}
       <motion.section
-        initial={{ opacity: 0, y: 80 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 1 }}
-        className="mt-24 mb-32 flex justify-center px-4"
+        style={{
+          opacity: missionInView ? 1 : 0.5,
+          transition: "opacity 0.6s ease",
+        }}
+        initial={{ y: 50 }}
+        animate={{ y: 0 }}
+        className="mt-20 md:mt-28 mb-16 md:mb-24 px-4 sm:px-6 w-full flex justify-center"
       >
-        <motion.div
-          whileHover={{
-            scale: 1.02,
-            y: -6,
-            boxShadow: "0 0 60px rgba(0,0,0,0.3)",
-          }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative bg-gradient-to-br from-gray-900/70 via-gray-900/60 to-green-950/40 border border-gray-800/60 
-                     rounded-[2rem] p-12 md:p-16 text-center shadow-[0_0_50px_rgba(0,0,0,0.15)] 
-                     max-w-4xl backdrop-blur-xl overflow-hidden"
-        >
-          <div className="relative z-10">
-            <h3 className="text-3xl md:text-4xl font-bold bg-green-500 bg-clip-text text-transparent mb-5">
-              Join the Farmer Connect Community
-            </h3>
-            <motion.div
-              className="w-20 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent mx-auto mb-8 rounded-full"
-              initial={{ width: 0 }}
-              whileInView={{ width: "5rem" }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            />
-            <p className="text-gray-300/90 mb-10 text-base md:text-xl leading-relaxed max-w-2xl mx-auto font-light">
-              Whether you're a farmer looking to expand your reach or a buyer seeking
-              fresh, authentic products — we bring you together.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="relative bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500
-                         text-white px-10 py-4 rounded-2xl text-base font-semibold overflow-hidden transition-all duration-300"
-            >
-              <span className="relative z-10">Know More</span>
-            </motion.button>
-          </div>
-        </motion.div>
+        <div className="max-w-4xl w-full text-center border border-gray-800 rounded-3xl py-10 sm:py-12 md:py-14 px-5 sm:px-7 md:px-8 bg-gray-900/60 backdrop-blur-md">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-50 mb-2 sm:mb-3">
+            Join the Farmer Connect Community
+          </h3>
+          <p className="text-gray-400 mb-7 sm:mb-8 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-light">
+            Whether you’re a farmer seeking growth or a buyer sourcing genuine produce —
+            together we’re building a better agricultural network.
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="px-7 sm:px-9 py-2.5 sm:py-3 rounded-xl bg-green-800/80 hover:bg-green-700 text-white font-medium transition-all duration-300 text-sm sm:text-base"
+          >
+            Know More
+          </motion.button>
+        </div>
       </motion.section>
     </div>
   );

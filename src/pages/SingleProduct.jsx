@@ -1,402 +1,322 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from '../Router/api'
-import axios from "axios";
-import { GOOGLE_MAP_API } from "../api/api";
-import { StarFilledIcon, StarIcon } from "@radix-ui/react-icons";
+import { motion } from "framer-motion";
+import { MapPin, Send, ShoppingCart, User } from "lucide-react";
+import api from "../Router/api";
 
+import "leaflet/dist/leaflet.css";
+import SingleProductMap from "../components/map/SingleProductMap";
+import MessageToast from "../components/common/MessageToast";
 
+// Skeleton shimmer
+const Skeleton = ({ className = "" }) => (
+  <div
+    className={`animate-pulse bg-gray-800/60 rounded-md transition-all duration-300 ease-out ${className}`}
+  />
+);
+
+const ImageSlider = React.lazy(() => import("../components/common/ImageSlider"));
 
 const SingleProduct = () => {
-  const userId = localStorage.getItem("userid")
-  const navigate = useNavigate();
   const { productId } = useParams();
-  
-  
-  // Move the function declaration above the useState hook
-  const getRandomCoordinates = () => {
-    // Generate random latitude and longitude within India (approximate boundaries)
-    const lat = 20 + Math.random() * (30 - 20);  // Latitude between 20° and 30°
-    const lng = 80 + Math.random() * (90 - 80);  // Longitude between 80° and 90°
-  
-    return { lat, lng };
-  };
+  const navigate = useNavigate();
+  const token = localStorage.getItem("jwtToken");
+  const userId = localStorage.getItem("buyerId");
 
-  const [product, setProduct] = useState({
-    imageUrl: "https://5.imimg.com/data5/SELLER/Default/2022/6/IX/CW/FY/31131351/all-you-need-to-know-about-okra-health-benefits-jpg-500x500.jpg",
-    name: "Bhindi",
-    category: "vegetables",
-    description: "A green, elongated vegetable with a slimy texture when cooked.",
-    price: 138,
-    farmer_id: 1,
-    address: "Village Jharberia, P.O. Kothagadia, Khordha District, Odisha - 752045",
-    available: true,
-    latitude: 19.932041306115536,
-    longitude: 85.14404296875,
-    productId: 9,
-    reviews: [],
-    variants:""
+  const [product, setProduct] = useState(null);
+  const [farmer, setFarmer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    status: "info",
   });
 
-  const [farmer, setFarmer] = useState({
-    userId: 0,
-    email: "",
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    registerTime: "",
-    userAccountStatus: "",
-    address: [],
-  });
 
-  
- const [messages, setMessages] = useState([]);
-   const [newMessage, setNewMessage] = useState("");
-   const token = localStorage.getItem("jwtToken");
-
-   const handleSendMessage = async () => {
-    const userId = localStorage.getItem("userid"); // fetch adminid from localStorage
-    const productId = product.productId;
-  
-    if (!newMessage.trim()) return;
-  
-    const commentPayload = {
-      userId: parseInt(userId),
-      productId: parseInt(productId),
-      content: newMessage.trim(),
-    };
-  
-    try {
-      await api.post("/ecom/comments/add", commentPayload, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      // Optionally, update the UI (e.g., chat messages or comments)
-      setMessages([...messages, { from: "You", text: newMessage }]);
-      setNewMessage("");
-    } catch (error) {
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Status code:", error.response.status);
-        console.error("Headers:", error.response.headers);
-      } else if (error.request) {
-        console.error("No response received:", error.request);
-      } else {
-        console.error("Error setting up the request:", error.message);
-      }
-    
-      alert("Error posting comment. Please try again.");
-    }
-    
-  };
-
-  console.log(product.farmer_id);
-  
-
-  // Use effect to fetch product chat data
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-  
-      api.get(`/ecom/comments/product/${productId}`)
-        .then(res => {
-          const fetchedMessages = res.data
-            .filter(comment =>
-              comment.role === 'ROLE_USER' ||
-              (comment.role === 'ROLE_ADMIN' && String(comment.userId) === String(product.farmer_id))
-            )
-            .map(comment => ({
-              from: comment.username || `User ${comment.userId}`,
-              text: comment.content,
-              role: comment.role,
-            }));
-          setMessages(fetchedMessages);
-        });
-    }, 500);
-  
-    return () => clearInterval(interval);
-  }, [productId]);
-
-  const [mapCoordinates, setMapCoordinates] = useState(getRandomCoordinates()); // Initialize coordinates here
-  const userid = localStorage.getItem("userid");
-
-  console.log("this is product Id ", productId);
-  
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await api.get(`/ecom/products/${productId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
-          },
-        });
-        
-        const fetchedProduct = response.data;
-        
-        // Map fetched data to match the product state
-        setProduct({
-          imageUrl: fetchedProduct.imageUrl || "", // Fallback in case imageUrl is missing
-          name: fetchedProduct.name || "Unknown Product",
-          category: fetchedProduct.category || "Uncategorized",
-          description: fetchedProduct.description || "No description available.",
-          price: fetchedProduct.price || 0,
-          farmer_id: fetchedProduct.farmer_id || 0,
-          address: fetchedProduct.address || "Address not available.",
-          available: fetchedProduct.available ?? true, // Defaults to true if undefined
-          latitude: fetchedProduct.latitude || 0,
-          longitude: fetchedProduct.longitude || 0,
-          productId: fetchedProduct.productId || 0,
-          reviews: fetchedProduct.reviews || [],
-          variants : fetchedProduct.variants
-        });
-        
-        console.log("Fetched product:", fetchedProduct);
-      } catch (error) {
-        console.error("Error fetching product details:", error);
-      }
-    };
-  
-    fetchProduct();
-  }, [productId]);
+  console.log(product);
+  console.log(farmer);
   
   
-console.log("this is product data", product.price);
-
-
-// useEffect to fetch Farmer details
-useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const response = await api.get(`/ecom/user/get-user/${product.farmer_id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
-        },
-      });
-
-      const fetchedUser = response.data;
-
-      // Map fetched data to match the user state
-      setFarmer({
-        userId: fetchedUser.userId || 0,
-        email: fetchedUser.email || "Email not available",
-        firstName: fetchedUser.firstName || "Unknown",
-        lastName: fetchedUser.lastName || "",
-        phoneNumber: fetchedUser.phoneNumber || "Phone number not available",
-        registerTime: fetchedUser.registerTime || "Registration time not available",
-        userAccountStatus: fetchedUser.userAccountStatus || "Status not available",
-        address: fetchedUser.address || [],
-      });
-
-      console.log("Fetched user:", fetchedUser);
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-    }
-  };
-
-  fetchUser();
-}, [productId]);
-
-console.log("farmer data ", farmer);
-
-
-const addProductToCart = (productId) => {
-  console.log("this is product Id", productId);  // Ensure the parameter is named correctly
-  api
-    .post(`/ecom/cart/add-product?userId=${userId}&productId=${productId}`)
-    .then((response) => {
-      localStorage.setItem("cartid", response.data.cartId);
-      alert("Product added to Cart.....");
-    })
-    .catch((error) => {
-      alert("Product Already in cart......");
-    });
-};
-
 
  useEffect(() => {
-  // Function to initialize the Google Map
-  const initMap = () => {
-    const map = new window.google.maps.Map(document.getElementById("map"), {
-      center: { lat: product.latitude || mapCoordinates.lat, lng: product.longitude || mapCoordinates.lng },
-      zoom: 12,
-    });
+  let isMounted = true;
 
-    // Add a marker for the farmer's location
-    new window.google.maps.Marker({
-      position: { lat: product.latitude || mapCoordinates.lat, lng: product.longitude || mapCoordinates.lng },
-      map: map,
-      title: "Farmer's Location",
-    });
-  };
+  const fetchData = async () => {
+    try {
+      const productRes = await api.get(`/api/v1/products/${productId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const fetchedProduct = productRes.data;
+      if (!isMounted) return;
 
-  // Load Google Maps API script dynamically
-  const loadGoogleMapsScript = () => {
-    if (!document.querySelector(`script[src*="maps.googleapis.com"]`)) {
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAP_API}&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    } else {
-      // Script already loaded; directly initialize the map
-      if (window.google && window.google.maps) {
-        initMap();
+      setProduct(fetchedProduct);
+
+      if (fetchedProduct?.farmerId) {
+        const farmerRes = await api.get(
+          `/api/v1/user/${fetchedProduct.farmerId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (isMounted) setFarmer(farmerRes.data);
       }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    } finally {
+      const timer = setTimeout(() => {
+        if (isMounted) setLoading(false);
+      }, 400);
+      return () => clearTimeout(timer);
     }
   };
 
-  // Set global callback for Google Maps
-  window.initMap = initMap;
+  fetchData();
+  return () => {
+    isMounted = false;
+  };
+}, [productId, token]);
 
-  // Load the script or initialize the map
-  loadGoogleMapsScript();
-}, [product.latitude, product.longitude]);
 
+  const fadeUp = {
+    hidden: { opacity: 0, y: 14 },
+    visible: (i = 0) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: i * 0.06, duration: 0.4 },
+    }),
+  };
+
+  const memoizedMap = useMemo(() => {
+    if (loading) return null;
+    if (!product?.latitude || !product?.longitude)
+      return (
+        <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
+          Location data not available
+        </div>
+      );
+
+    return (
+      <div className="rounded-lg overflow-visible border border-gray-800 relative z-10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+        <div className="w-full h-64 relative">
+          <SingleProductMap
+            latitude={product.latitude}
+            longitude={product.longitude}
+            productName={product.name}
+          />
+        </div>
+      </div>
+    );
+  }, [loading, product?.latitude, product?.longitude, product?.name]);
+
+  const addToCart = async () => {
+    try {
+      await api.post(`/ecom/cart/add-product?userId=${userId}&productId=${productId}`);
+      setToast({ show: true, message: "Product added to cart 🛒", status: "success" });
+    } catch (err) {
+      setToast({
+        show: true,
+        message: "Product already in cart or failed to add.",
+        status: "error",
+      });
+    }
+  };
 
   return (
-    <>
-      <h1 className="text-4xl text-center text-green-600 my-4">Product Details</h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#060606] via-[#0d0d0e] to-[#151516] text-gray-200 relative">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.03),transparent_40%)]" />
 
-      {/* Product and Sidebar Wrapper */}
-      <div className="flex flex-wrap justify-between p-6 bg-white shadow-lg rounded-lg">
-        
-        {/* Product Details Section */}
-        <div className="w-full lg:w-2/3 pr-6 mb-6 lg:mb-0">
-          <ProductDetails product={product} addProductToCart={addProductToCart} navigate={navigate} mapCoordinates={mapCoordinates} />
-        </div>
+      <div className="max-w-7xl mx-auto px-6 py-10 relative z-0 ">
 
-        {/* Sidebar: Farmer Profile, Address, Contact, Rating, and Chat */}
-        <div className="w-full lg:w-1/3 pl-6">
-          <FarmerProfile farmer={farmer} />
-          <FarmerAddress product={product} />
-          <FarmerContact farmer={farmer} />
-          <LiveChat messages={messages} newMessage={newMessage} setNewMessage={setNewMessage} handleSendMessage={handleSendMessage} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10 ">
+          {/* LEFT CONTENT */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+              className="lg:col-span-2 h-[85vh] overflow-y-auto custom-scrollbar p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 shadow-[0_0_15px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
+            >
+              {loading ? (
+              <>
+                <Skeleton className="h-[360px] w-full mb-6" />
+                <Skeleton className="h-6 w-1/3 mb-3" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/4" />
+              </>
+            ) : (
+              product && (
+                <>
+                  <div className="relative mb-6">
+                    <div className="rounded-xl overflow-hidden">
+                      <Suspense
+                        fallback={
+                          <div className="w-full h-[360px] bg-gray-800 rounded-xl animate-pulse" />
+                        }
+                      >
+                        <ImageSlider images={product.imageUrls || []} />
+                      </Suspense>
+                    </div>
+                  </div>
+
+                  {/* INFO */}
+                  <div className="flex flex-col gap-6">
+                    <div>
+                      <h1 className="text-3xl font-semibold text-gray-100 flex items-center gap-2">
+                        {product.name}
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            product.available
+                              ? "bg-green-700/30 text-green-300"
+                              : "bg-red-700/30 text-red-300"
+                          }`}
+                        >
+                          {product.available ? "Available" : "Sold Out"}
+                        </span>
+                      </h1>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {product.category}
+                      </p>
+                      <p className="mt-4 text-gray-300 leading-relaxed">
+                        {product.description}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                       <div className="mt-8">
+                      <button
+                        onClick={addToCart}
+                        className="px-6 py-3 rounded-lg bg-green-700/80 hover:bg-green-600 text-gray-100 font-medium border border-green-600/60 transition-all shadow-[0_0_10px_rgba(34,197,94,0.25)] hover:shadow-[0_0_14px_rgba(34,197,94,0.35)]"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+
+                      <div className="flex items-center gap-3 bg-gray-800/40 p-3 rounded-lg">
+                        <MapPin className="text-gray-300" />
+                        <div>
+                          <div className="text-xs text-gray-400">Location</div>
+                          <div className="text-gray-100 font-medium">
+                            {product.address || "Not provided"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )
+            )}
+          </motion.div>
+
+          {/* RIGHT CONTENT */}
+          <div className="space-y-6 h-[85vh] overflow-y-auto custom-scrollbar pr-2">
+            {/* MAP */}
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="p-6 h-[30rem] rounded-2xl bg-gray-900/40 border border-gray-800/60 shadow relative z-10 backdrop-blur-md"
+            >
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">
+                Product Location
+              </h3>
+              {loading ? <Skeleton className="w-full h-64 mb-2" /> : memoizedMap}
+            </motion.div>
+
+            {/* FARMER INFO */}
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 shadow backdrop-blur-md"
+            >
+              <h3 className="text-sm font-semibold text-gray-100 mb-3 flex items-center gap-2">
+                <User size={16} /> Farmer Details
+              </h3>
+              {farmer ? (
+                <div className="space-y-2 text-gray-300 text-sm">
+                  <p>
+                    <span className="text-gray-400">Name:</span>{" "}
+                    {farmer.firstName} {farmer.lastName}
+                  </p>
+                  <p>
+                    <span className="text-gray-400">Email:</span> {farmer.email}
+                  </p>
+                  <p>
+                    <span className="text-gray-400">Contact:</span>{" "}
+                    {farmer.phoneNumber}
+                  </p>
+                </div>
+              ) : (
+                <Skeleton className="h-24 w-full" />
+              )}
+            </motion.div>
+
+            {/* COMMENT SECTION STRUCTURE */}
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              className="p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 shadow backdrop-blur-md"
+            >
+              <h3 className="text-sm font-semibold text-gray-100 mb-3">
+                CHAT / COMMENTS
+              </h3>
+              <div className="bg-gray-800/40 border border-gray-800 rounded-lg h-64 flex items-center justify-center text-gray-400">
+                💬 Chat feature coming soon...
+              </div>
+
+              <div className="mt-4 flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  disabled
+                  className="flex-1 bg-gray-800 border border-gray-800 rounded-md px-3 py-2 text-gray-400 cursor-not-allowed"
+                />
+                <button className="px-3 py-2 rounded-md bg-gray-800/30 text-gray-400 cursor-not-allowed">
+                  <Send />
+                </button>
+              </div>
+            </motion.div>
+
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => navigate("/products")}
+                className="text-sm text-gray-300 hover:text-gray-100"
+              >
+                ← Back to Explore Products
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-    </>
-  );
-};
+      <MessageToast
+        show={toast.show}
+        onClose={() => setToast({ ...toast, show: false })}
+        message={toast.message}
+        status={toast.status}
+      />
 
-// Farmer Profile Component
-const FarmerProfile = ({ farmer }) => {
-  return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow">
-      <h3 className="text-xl font-semibold text-green-600">Farmer Profile</h3>
-      <p><strong>Name:</strong> {farmer.firstName +" "+farmer.lastName}</p>
-      <p><strong>Rating:</strong> -- </p>
-    </div>
-  );
-};
-
-// Farmer Address Component
-const FarmerAddress = ({ product }) => {
-  return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow mt-4">
-      <h3 className="text-xl font-semibold text-green-600">Farmer Address</h3>
-      <p>{product.address}</p>
-    </div>
-  );
-};
-
-// Farmer Contact Component
-const FarmerContact = ({ farmer }) => {
-  return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow mt-4">
-      <h3 className="text-xl font-semibold text-green-600">Farmer Contact</h3>
-      <p><strong>Contact:</strong> {farmer.phoneNumber}</p>
-    </div>
-  );
-};
-
-// Live Chat Component
-const LiveChat = ({ messages, newMessage, setNewMessage, handleSendMessage }) => {
-  return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 flex-1 flex flex-col h-96">
-  <h2 className="text-xl font-bold text-green-800 mb-4">Live Chat</h2>
-
-  {/* Messages */}
-  <div className="flex-1 overflow-y-auto border rounded-lg p-4 mb-4 space-y-2">
-  {messages.map((msg, index) => (
-    <div
-      key={index}
-      className={`p-2 rounded-lg ${
-        msg.role === "ROLE_ADMIN"
-          ? "bg-green-100"
-          : msg.from === "You"
-          ? "bg-green-100 text-right"
-          : "bg-gray-100"
-      }`}
-    >
-      <p className="text-sm font-medium">{msg.from}</p>
-      <p>{msg.text}</p>
-    </div>
-  ))}
-</div>
-
-  {/* Input and Send Button */}
-  <div className="flex items-center space-x-4">
-  <input
-    type="text"
-    value={newMessage}
-    onChange={(e) => setNewMessage(e.target.value)}
-    placeholder="Type a message..."
-    className="flex-1 border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-green-600"
-  />
-  <button
-    onClick={handleSendMessage}
-    className="bg-green-800 hover:bg-green-900 text-white px-4 py-2 rounded-xl"
-  >
-    Send
-  </button>
-</div>
-
-</div>
-  );
-};
-
-// Component for displaying product details
-const ProductDetails = ({ product, addProductToCart, navigate, mapCoordinates }) => {
-  return (
-    <div className="space-y-4">
-     <div className="flex flex-wrap">
-  {/* Product Image */}
-  <div className="w-full md:w-3/5 mb-4 md:mr-10">
-    <img
-      src={product.imageUrl}
-      alt={product.name}
-      className="w-full h-80 object-cover rounded-lg shadow-lg"
-    />
-  </div>
-
-  {/* Google Map Section */}
-  <div className="w-full md:w-1/3 mb-4">
-    <div id="map" className="h-80 bg-gray-200 rounded-lg shadow-lg"></div>
-  </div>
-</div>
-
-
-
-      {/* Product Details */}
-      <div className="space-y-2">
-        <h2 className="text-2xl font-semibold text-green-600">{product.name}</h2>
-        <p><strong>Category:</strong> {product.category}</p>
-        <p><strong>Description:</strong> {product.description}</p>
-        <p><strong>Quantity Available:</strong> {product.price} kg</p>
-        <p><strong>Variants Available:</strong> {product.variants}</p>
-        <button
-          onClick={() => {
-            addProductToCart(product.productId);
-            navigate("/user/cart");
-          }}
-          className="mt-4 py-2 px-4 bg-green-600 text-white rounded-lg"
-        >
-          Add to Cart
-        </button>
-      </div>
+      <style>
+        {`
+        .custom-scrollbar::-webkit-scrollbar {}
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(18, 18, 18, 0.4);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, rgba(34,197,94,0.35), rgba(34,197,94,0.25));
+          border-radius: 9999px;
+          border: 1px solid rgba(12,12,12,0.6);
+          transition: all 0.25s ease;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, rgba(34,197,94,0.6), rgba(34,197,94,0.45));
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(34,197,94,0.4) rgba(18,18,18,0.4);
+        }
+      `}
+      </style>
     </div>
   );
 };

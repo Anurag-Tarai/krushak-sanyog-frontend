@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import AddProduct from "../components/product/AddProduct";
-import AllProductAdmin from "../components/farmer/AllProductFarmer";
-import MessageToast from "../components/common/MessageToast";
+import AddProduct from "../product/AddProduct";
+import AllProductAdmin from "./AllProductFarmer";
+import MessageToast from "../common/MessageToast";
 
 const FarmerDashBoard = () => {
   const [selectedComponent, setSelectedComponent] = useState("all-products");
@@ -63,7 +63,7 @@ const FarmerDashBoard = () => {
   variants={fadeUp}
   initial="hidden"
   animate="visible"
-  className="mt-10 lg:col-span-1 p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 backdrop-blur-md 
+  className=" mt-10 lg:col-span-1 p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 backdrop-blur-md 
              shadow-[0_0_20px_rgba(255,255,255,0.04)] flex flex-col justify-between
              w-[300px] h-[85vh] mx-auto lg:mx-0"
 >
@@ -81,7 +81,7 @@ const FarmerDashBoard = () => {
           className={`cursor-pointer px-4 py-3 rounded-xl text-sm font-medium border transition-all duration-400
             ${
               selectedComponent === item.value
-                ? "bg-green-800/40 border-green-700 text-green-300 shadow-[0_0_15px_rgba(34,197,94,0.25)]"
+                ? "bg-green-800/40 border-green-800/40 text-white-300 "
                 : "bg-gray-800/40 border-gray-700/60 text-gray-300 hover:bg-gray-800/60 hover:border-green-700 hover:text-green-400"
             }`}
         >
@@ -131,6 +131,28 @@ shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
         message={toast.message}
         status={toast.status}
       />
+
+       {/* 🪶 Ultra Compact Modern Scrollbar */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {}
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(18, 18, 18, 0.4);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, rgba(34, 197, 94, 0.35), rgba(34, 197, 94, 0.25));
+          border-radius: 9999px;
+          border: 1px solid rgba(12, 12, 12, 0.6);
+          transition: all 0.25s ease;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, rgba(34, 197, 94, 0.6), rgba(34, 197, 94, 0.45));
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(34, 197, 94, 0.4) rgba(18, 18, 18, 0.4);
+        }
+      `}</style>
     </div>
   );
 };

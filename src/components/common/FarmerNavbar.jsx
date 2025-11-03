@@ -39,14 +39,12 @@ const FarmerNavbar = () => {
   };
 
   const handleLogoutConfirmed = async () => {
-    setLogoutStatus("Processing logout...");
+    setShowLogoutConfirm(false);
     showToast("Logging out...", "processing", 2000);
     await new Promise((res) => setTimeout(res, 1000));
     localStorage.clear();
-    setLogoutStatus("Logout successful!");
     showToast("Logout successful!", "success", 2500);
     await new Promise((res) => setTimeout(res, 700));
-    setShowLogoutConfirm(false);
     navigate("/");
   };
 
@@ -187,11 +185,7 @@ const FarmerNavbar = () => {
             <h3 className="text-lg font-semibold text-gray-100 mb-3">
               Confirm Logout
             </h3>
-            {logoutStatus ? (
-              <p className="text-sm text-gray-400 animate-pulse">
-                {logoutStatus}
-              </p>
-            ) : (
+            { (
               <p className="text-sm text-gray-400 mb-4">
                 Are you sure you want to log out?
               </p>

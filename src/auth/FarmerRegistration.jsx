@@ -1,16 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import MessageToast from "../components/common/MessageToast";
 
 const initialFormData = {
-  email: "",
-  password: "",
-  firstName: "",
-  lastName: "",
-  phoneNumber: "",
-};
-
-const initialErrors = {
   email: "",
   password: "",
   firstName: "",
@@ -21,9 +14,17 @@ const initialErrors = {
 const FarmerRegistration = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialFormData);
-  const [errors, setErrors] = useState(initialErrors);
-  const [status, setStatus] = useState("");
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    status: "info",
+  });
   const [loading, setLoading] = useState(false);
+
+  const showToast = (message, status = "info") => {
+    setToast({ show: true, message, status });
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -60,7 +61,7 @@ const FarmerRegistration = () => {
     if (!validateForm()) return;
 
     setLoading(true);
-    setStatus("Processing registration...");
+    showToast("Processing registration...", "info");
 
     try {
       const response = await axios.post(
@@ -69,49 +70,44 @@ const FarmerRegistration = () => {
       );
 
       if (response.status === 200) {
-        setStatus("Registered successfully ✅ Sign in to continue...");
-        setTimeout(() => {
-          navigate("/farmer/signin");
-        }, 2000);
+        showToast("Registered successfully ✅ Redirecting...", "success");
+        setTimeout(() => navigate("/farmer/signin"), 1500);
       } else {
-        setStatus("Registration failed ❌");
+        showToast("Registration failed ❌", "error");
       }
     } catch (error) {
       console.error("Error registering:", error);
-      setStatus("Error during registration ❌");
+      showToast("Error during registration ❌", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔄 Auto-hide status after 4 seconds
-  useEffect(() => {
-    if (status) {
-      const timer = setTimeout(() => setStatus(""), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
-
-  const { email, password, firstName, lastName, phoneNumber } = form;
+  const handleGoogleAuth = () => {
+    showToast("Google Authentication coming soon 🚀", "info");
+  };
 
   return (
-    <div className="mt-12 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black text-gray-100 px-4 relative">
-      <h2 className="text-3xl font-bold mb-6 tracking-wide bg-gradient-to-r from-green-400 to-green-200 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]">
-        Become a Farmer 🌿
-      </h2>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0c] text-gray-100 px-4">
+      <div className="mt-16 w-full max-w-md bg-gray-900/40 border border-[#2a2a2a] rounded-2xl backdrop-blur-xl shadow-lg p-8 custom-scrollbar">
+        <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">
+          Become a Farmer 🌿
+        </h2>
 
-      <div className="w-full max-w-md bg-gray-900/70 border border-green-800/40 backdrop-blur-lg rounded-2xl shadow-[0_0_25px_rgba(34,197,94,0.15)] p-8 transition-all duration-300 hover:shadow-[0_0_35px_rgba(34,197,94,0.25)]">
-        <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+          {/* Email */}
           <div>
-            <label className="block text-green-300 font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Email
+            </label>
             <input
               type="text"
               name="email"
-              value={email}
+              value={form.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
-                focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
               autoComplete="new-password"
             />
             {errors.email && (
@@ -119,16 +115,19 @@ const FarmerRegistration = () => {
             )}
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-green-300 font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Password
+            </label>
             <input
               type="password"
               name="password"
-              value={password}
+              value={form.password}
               onChange={handleChange}
               placeholder="Enter your password"
-              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
-                focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
               autoComplete="new-password"
             />
             {errors.password && (
@@ -136,102 +135,124 @@ const FarmerRegistration = () => {
             )}
           </div>
 
+          {/* Names */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-green-300 font-medium mb-1">First Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                First Name
+              </label>
               <input
                 type="text"
                 name="firstName"
-                value={firstName}
+                value={form.firstName}
                 onChange={handleChange}
                 placeholder="First name"
-                className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
-                  focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+                className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+                focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
               />
               {errors.firstName && (
-                <span className="text-red-400 text-sm mt-1 block">{errors.firstName}</span>
+                <span className="text-red-400 text-sm mt-1 block">
+                  {errors.firstName}
+                </span>
               )}
             </div>
 
             <div className="flex-1">
-              <label className="block text-green-300 font-medium mb-1">Last Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Last Name
+              </label>
               <input
                 type="text"
                 name="lastName"
-                value={lastName}
+                value={form.lastName}
                 onChange={handleChange}
                 placeholder="Last name"
-                className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
-                  focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+                className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+                focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
               />
               {errors.lastName && (
-                <span className="text-red-400 text-sm mt-1 block">{errors.lastName}</span>
+                <span className="text-red-400 text-sm mt-1 block">
+                  {errors.lastName}
+                </span>
               )}
             </div>
           </div>
 
+          {/* Phone */}
           <div>
-            <label className="block text-green-300 font-medium mb-1">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Phone Number
+            </label>
             <input
               type="text"
               name="phoneNumber"
-              value={phoneNumber}
+              value={form.phoneNumber}
               onChange={handleChange}
               placeholder="Enter your phone number"
-              className="w-full px-4 py-2 rounded-lg bg-gray-800/80 border border-green-700/40 text-green-100 
-                focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-500"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
             {errors.phoneNumber && (
-              <span className="text-red-400 text-sm mt-1 block">{errors.phoneNumber}</span>
+              <span className="text-red-400 text-sm mt-1 block">
+                {errors.phoneNumber}
+              </span>
             )}
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
             className={`w-full py-2 mt-2 font-semibold rounded-lg shadow-lg transition-all duration-200 
               ${
                 loading
-                  ? "bg-green-700 text-gray-300 cursor-not-allowed"
-                  : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white hover:scale-[1.02]"
+                  ? "bg-green-700/60 text-gray-300 cursor-not-allowed"
+                  : "bg-green-700/60 hover:bg-green-700 text-white"
               }`}
           >
             {loading ? "Processing..." : "Register"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-green-200">
+        {/* 🔹 Divider */}
+          <div className="flex items-center my-4">
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+            <span className="mx-3 text-gray-500 text-sm">or</span>
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+          </div>
+
+        {/* Google Auth */}
+        <button
+          onClick={handleGoogleAuth}
+          className="w-full mt-4 py-2  bg-gray-900/60 rounded-lg border border-[#2f2f2f] hover:border-emerald-500/60 
+          text-gray-300 hover:text-emerald-400 transition-all flex items-center justify-center gap-2"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          Continue with Google
+        </button>
+
+        <p className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{" "}
           <Link
             to="/farmer/signin"
-            className="text-green-400 hover:underline hover:text-green-300 transition"
+            className="text-emerald-400 hover:underline hover:text-emerald-300 transition"
           >
             Sign in here
           </Link>
         </p>
       </div>
 
-      {/* ✅ Floating status message (toggle style like SignIn) */}
-      {status && (
-        <div
-          className={`fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-lg text-sm font-medium text-green-100 
-            bg-gray-900/80 border border-green-700/40 backdrop-blur-md transition-all duration-500 
-            animate-fade-in-out`}
-        >
-          {status}
-        </div>
-      )}
-
-      {/* ✅ Animation for status fade */}
-      <style>{`
-        @keyframes fadeInOut {
-          0%, 100% { opacity: 0; transform: translateY(10px); }
-          10%, 90% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-out {
-          animation: fadeInOut 4s ease-in-out forwards;
-        }
-      `}</style>
+      {/* ✅ Shared toast */}
+      <MessageToast
+        show={toast.show}
+        message={toast.message}
+        status={toast.status}
+         onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

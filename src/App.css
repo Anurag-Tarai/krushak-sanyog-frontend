@@ -15,13 +15,22 @@
 } */
 
 input:-webkit-autofill,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:hover {
-  -webkit-box-shadow: 0 0 0px 1000px #1f2937 inset !important; /* bg-gray-800 */
-  -webkit-text-fill-color: #d1fae5 !important; /* text-green-100 */
-  caret-color: #d1fae5 !important;
-}
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:hover {
+      -webkit-box-shadow: 0 0 0px 1000px #212936 inset !important; /* matches bg-gray-800 */
+      -webkit-text-fill-color: #d1fae5 !important; /* text-green-100 */
+      caret-color: #d1fae5 !important;
+      transition: background-color 9999s ease-in-out 0s;
+    }
 
 html {
   scroll-behavior: smooth;
+}
+
+
+/* 🟩 Green highlight color for selected dropdown options */
+select option:checked,
+select option:focus {
+  background-color: #059669 !important; /* emerald-600 */
+  color: #fff !important;
 }

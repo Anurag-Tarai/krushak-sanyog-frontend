@@ -1,17 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { UserPlus } from "lucide-react";
+import MessageToast from "../components/common/MessageToast";
 
 const initialFormData = {
-  email: "",
-  password: "",
-  firstName: "",
-  lastName: "",
-  phoneNumber: "",
-};
-
-const initialErrors = {
   email: "",
   password: "",
   firstName: "",
@@ -22,34 +14,43 @@ const initialErrors = {
 const Registration = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialFormData);
-  const [errors, setErrors] = useState(initialErrors);
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    status: "info",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const showToast = (message, status = "info") => {
+    setToast({ show: true, message, status });
+  };
 
   const validateForm = () => {
     const newErrors = {};
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-    const phoneRegex = /^[0-9]{10}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[6-9]\d{9}$/;
 
-    if (!form.email || !emailRegex.test(form.email)) {
-      newErrors.email = "Please enter a valid email.";
-    }
-    if (!form.password || form.password.length < 6) {
+    if (!form.email) newErrors.email = "Email is required.";
+    else if (!emailRegex.test(form.email))
+      newErrors.email = "Enter a valid email address.";
+
+    if (!form.password) newErrors.password = "Password is required.";
+    else if (form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters.";
-    }
-    if (!form.firstName) {
-      newErrors.firstName = "First name is required.";
-    }
-    if (!form.lastName) {
-      newErrors.lastName = "Last name is required.";
-    }
-    if (!form.phoneNumber || !phoneRegex.test(form.phoneNumber)) {
-      newErrors.phoneNumber = "Please enter a valid 10-digit phone number.";
-    }
+
+    if (!form.firstName) newErrors.firstName = "First name is required.";
+    if (!form.lastName) newErrors.lastName = "Last name is required.";
+
+    if (!form.phoneNumber) newErrors.phoneNumber = "Phone number is required.";
+    else if (!phoneRegex.test(form.phoneNumber))
+      newErrors.phoneNumber = "Enter a valid 10-digit phone number.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
     setErrors({ ...errors, [name]: "" });
@@ -59,150 +60,199 @@ const Registration = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    setLoading(true);
+    showToast("Processing registration...", "info");
+
     try {
       const response = await axios.post(
-        "http://localhost:8080/ecom/customers",
-        form
+        "http://localhost:8080/api/v1/auth/register",
+        { ...form, role: "ROLE_BUYER" }
       );
+
       if (response.status === 200) {
-        alert("Your registration was successful");
-        navigate("/login");
+        showToast("Registered successfully ✅ Redirecting...", "success");
+        setTimeout(() => navigate("/buyer/signin"), 1500);
+      } else {
+        showToast("Registration failed ❌", "error");
       }
     } catch (error) {
-      if (error.response?.data) {
-        alert(error.response.data.message);
-      } else {
-        alert("Error registering. Please try again later.");
-      }
+      console.error("Error registering:", error);
+      showToast("Error during registration ❌", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const { email, password, firstName, lastName, phoneNumber } = form;
+  const handleGoogleAuth = () => {
+    showToast("Google Authentication coming soon...", "info");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-950 via-black to-gray-900 text-gray-100 relative overflow-hidden px-4 py-16">
-      {/* ✨ Ambient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-950/60 via-black/70 to-gray-900/90 pointer-events-none" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-br from-green-500/10 via-green-700/5 to-transparent blur-[120px] rounded-full opacity-60" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0c] text-gray-100 px-4">
+      <div className="mt-16 w-full max-w-md bg-gray-900/40 border border-[#2a2a2a] rounded-2xl backdrop-blur-xl shadow-lg p-8 custom-scrollbar">
+        <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">
+          BUYERS SIGN UP
+        </h2>
 
-      {/* 🌾 Heading */}
-      <div className="relative z-10 flex flex-col items-center mb-10 text-center">
-        <div  className="pt-4 flex items-center gap-3">
-          <UserPlus
-            size={38}
-            className="text-green-400 drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]"
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Email
+            </label>
+            <input
+              type="text"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Enter your email"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
+              autoComplete="new-password"
+            />
+            {errors.email && (
+              <span className="text-red-400 text-sm mt-1 block">{errors.email}</span>
+            )}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Enter your password"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
+              autoComplete="new-password"
+            />
+            {errors.password && (
+              <span className="text-red-400 text-sm mt-1 block">{errors.password}</span>
+            )}
+          </div>
+
+          {/* Names */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                First Name
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                value={form.firstName}
+                onChange={handleChange}
+                placeholder="First name"
+                className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+                focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
+              />
+              {errors.firstName && (
+                <span className="text-red-400 text-sm mt-1 block">
+                  {errors.firstName}
+                </span>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                value={form.lastName}
+                onChange={handleChange}
+                placeholder="Last name"
+                className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+                focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
+              />
+              {errors.lastName && (
+                <span className="text-red-400 text-sm mt-1 block">
+                  {errors.lastName}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              name="phoneNumber"
+              value={form.phoneNumber}
+              onChange={handleChange}
+              placeholder="Enter your phone number"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
+            />
+            {errors.phoneNumber && (
+              <span className="text-red-400 text-sm mt-1 block">
+                {errors.phoneNumber}
+              </span>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 mt-2 font-semibold rounded-lg shadow-lg transition-all duration-200 
+              ${
+                loading
+                  ? "bg-green-700/60 text-gray-300 cursor-not-allowed"
+                  : "bg-green-700/60 hover:bg-green-700 text-white"
+              }`}
+          >
+            {loading ? "Processing..." : "Register"}
+          </button>
+        </form>
+
+        {/* 🔹 Divider */}
+          <div className="flex items-center my-4">
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+            <span className="mx-3 text-gray-500 text-sm">or</span>
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+          </div>
+
+        {/* Google Auth */}
+        <button
+          onClick={handleGoogleAuth}
+          className="w-full mt-4 py-2  bg-gray-900/60 rounded-lg border border-[#2f2f2f] hover:border-emerald-500/60 
+          text-gray-300 hover:text-emerald-400 transition-all flex items-center justify-center gap-2"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            className="w-5 h-5"
           />
-          <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(34,197,94,0.25)] tracking-wide">
-            Create Your Buyer Account
-          </h1>
-        </div>
-        <p className="text-gray-400 text-sm mt-2 tracking-wide">
-          Join the farmer connect — connect directly with local farmers 🌾
+          Continue with Google
+        </button>
+
+        <p className="mt-6 text-center text-sm text-gray-400">
+          Already have an account?{" "}
+          <Link
+            to="/buyer/signin"
+            className="text-emerald-400 hover:underline hover:text-emerald-300 transition"
+          >
+            Sign in here
+          </Link>
         </p>
       </div>
 
-      {/* 🪶 Registration Form */}
-      <div
-        className="relative z-10 w-full max-w-md p-8 
-                    bg-gray-900/90 border border-green-800/30 backdrop-blur-md rounded-2xl
-                    shadow-[0_0_25px_rgba(34,197,94,0.08)] hover:shadow-[0_0_30px_rgba(34,197,94,0.12)] transition-shadow"
-      >
-        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5">
-          {/* Hidden dummy fields for browser autofill */}
-          <input
-            type="text"
-            name="fake-username"
-            id="fake-username"
-            autoComplete="username"
-            style={{ display: "none" }}
-            tabIndex={-1}
-          />
-          <input
-            type="password"
-            name="fake-password"
-            id="fake-password"
-            autoComplete="new-password"
-            style={{ display: "none" }}
-            tabIndex={-1}
-          />
-
-          {[
-            {
-              label: "First Name",
-              name: "firstName",
-              type: "text",
-              value: firstName,
-              autoComplete: "given-name",
-            },
-            {
-              label: "Last Name",
-              name: "lastName",
-              type: "text",
-              value: lastName,
-              autoComplete: "family-name",
-            },
-            {
-              label: "Email",
-              name: "email",
-              type: "text",
-              value: email,
-              autoComplete: "email",
-            },
-            {
-              label: "Password",
-              name: "password",
-              type: "password",
-              value: password,
-              autoComplete: "new-password",
-            },
-            {
-              label: "Phone Number",
-              name: "phoneNumber",
-              type: "text",
-              value: phoneNumber,
-              autoComplete: "tel",
-            },
-          ].map(({ label, name, type, value, autoComplete }) => (
-            <div key={name}>
-              <label className="block text-gray-300 mb-2">{label}</label>
-              <input
-                type={type}
-                name={name}
-                value={value}
-                onChange={handleInputChange}
-                autoComplete={autoComplete}
-                spellCheck="false"
-                autoCapitalize="off"
-                className="w-full px-4 py-3 rounded-lg bg-gray-800/70 border border-green-800/30 text-gray-100 placeholder-gray-500
-                           focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-400/70 transition-all duration-300"
-              />
-              {errors[name] && (
-                <span className="text-red-400 text-sm">{errors[name]}</span>
-              )}
-            </div>
-          ))}
-
-          <button
-            type="submit"
-            className="w-full py-3 mt-4 text-lg font-semibold rounded-lg text-white 
-                       bg-gradient-to-r from-green-600 to-green-500 
-                       hover:from-green-500 hover:to-green-400 transition duration-300 
-                       shadow-md hover:shadow-[0_0_20px_rgba(34,197,94,0.25)]"
-          >
-            Register
-          </button>
-
-          <p className="text-center text-gray-400 text-sm mt-4">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-green-400 hover:text-green-300 hover:underline transition"
-            >
-              Login here
-            </Link>
-          </p>
-        </form>
-      </div>
+      {/* ✅ Shared toast */}
+      <MessageToast
+        show={toast.show}
+        message={toast.message}
+        status={toast.status}
+         onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

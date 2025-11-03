@@ -3,10 +3,10 @@ import { Outlet, Navigate } from "react-router-dom";
 
 const Privateroute = () => {
   let auth = false;
-  if (localStorage.getItem("jwtToken") && localStorage.getItem("userId")) {
+  if (localStorage.getItem("jwtToken") && localStorage.getItem("buyerId")) {
     auth = true;
   }
-  return auth ? <Outlet /> : <Navigate to="/login" />;
+  return auth ? <Outlet /> : <Navigate to="/buyer/signin" />;
 };
 
 const Privaterouteadmin = () => {

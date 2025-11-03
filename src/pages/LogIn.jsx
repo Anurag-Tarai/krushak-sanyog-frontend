@@ -1,127 +1,191 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { UserCheck } from "lucide-react";
+import MessageToast from "../components/common/MessageToast";
+
+const initialFormData = {
+  email: "",
+  password: "",
+};
 
 const Login = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    status: "info",
+  });
 
-  const setHandlerChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const showToast = (message, status = "info") => {
+    setToast({ show: true, message, status });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!form.email) newErrors.email = "Email is required.";
+    else if (!emailRegex.test(form.email))
+      newErrors.email = "Enter a valid email address.";
+
+    if (!form.password) newErrors.password = "Password is required.";
+    else if (form.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
-      const authHeader = `Basic ${btoa(`${form.username}:${form.password}`)}`;
-      const role = "ROLE_USER";
+      showToast("Processing login...", "info");
+      const role = "ROLE_BUYER";
+      const res = await axios.post(
+        "http://localhost:8080/api/v1/auth/login",
+        { ...form, role },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-      const response = await axios.get("http://localhost:8080/ecom/signIn", {
-        headers: { Authorization: authHeader },
-        params: { role },
-      });
+      const { token, userId, name } = res.data;
 
-      if (response.headers.authorization) {
-        localStorage.setItem("jwtToken", response.headers.authorization);
-        localStorage.setItem("name", response.data.firstName || "LogIn");
-        localStorage.setItem("userid", response.data.id);
-        navigate("/");
+      if (token) {
+        localStorage.setItem("jwtToken", token);
+        localStorage.setItem("buyerId", userId);
+        localStorage.setItem("name", name || "Buyer");
+        localStorage.setItem("role", "buyer");
+
+        showToast("Signed in successfully ✅", "success");
+
+        setTimeout(() => navigate("/products"), 1500);
       } else {
-        alert("Invalid Credential");
+        showToast("Invalid credentials or missing token.", "error");
       }
     } catch (error) {
-      if (error.response?.status === 401) {
-        alert("Invalid credentials. Please try again.");
-      } else if (error.response?.status === 502) {
-        alert("You are not a CUSTOMER");
-      } else {
-        alert("Error during login. Please try again later.");
-      }
+      if (error.response?.status === 401)
+        showToast("Invalid credentials. Please try again.", "error");
+      else if (error.response?.status === 403)
+        showToast("Access denied. You are not a buyer.", "error");
+      else showToast("Server error. Please try again later.", "error");
     }
   };
 
-  const { username, password } = form;
+  // ⚡ Handle Google Sign-in (coming soon)
+  const handleGoogleSignIn = () => {
+    showToast("Google sign-in under development", "info");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-950 via-black to-gray-900 text-gray-100 relative overflow-hidden">
-      {/* ✨ Ambient overlay (subtle green glow) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-950/60 via-black/70 to-gray-900/90 pointer-events-none" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-br from-green-500/10 via-green-700/5 to-transparent blur-[120px] rounded-full opacity-60" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0c] text-gray-100 px-4">
+      <div className="w-full max-w-md bg-gray-900/40 border border-[#2a2a2a] rounded-2xl backdrop-blur-xl shadow-lg p-8 custom-scrollbar">
+        <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">
+          Welcome Buyer
+        </h2>
 
-      {/* 🌾 Heading */}
-      <div className="relative z-10 flex flex-col items-center mb-10 text-center">
-        <div className="flex items-center gap-3">
-          <UserCheck
-            size={38}
-            className="text-green-400 drop-shadow-[0_0_10px_rgba(34,197,94,0.4)]"
-          />
-          <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(34,197,94,0.25)] tracking-wide">
-            Buyer Sign In
-          </h1>
-        </div>
-        <p className="text-gray-400 text-sm mt-2 tracking-wide">
-          Connect with farmers, buy fresh products directly 🌾
-        </p>
-      </div>
-
-      {/* 🪶 Form Card */}
-      <div
-        className="relative z-10 w-full max-w-md p-8 
-                    bg-gray-900/90 border border-green-800/30 backdrop-blur-md rounded-2xl
-                    shadow-[0_0_25px_rgba(34,197,94,0.08)] hover:shadow-[0_0_30px_rgba(34,197,94,0.12)] transition-shadow"
-      >
-        <form onSubmit={submitHandler} className="space-y-6">
+        <form onSubmit={submitHandler} className="space-y-5">
           <div>
-            <label className="block text-gray-300 mb-2">Username</label>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Email
+            </label>
             <input
-              id="username"
-              type="text"
-              name="username"
-              value={username}
-              onChange={setHandlerChange}
-              placeholder="Enter your username"
-              autoComplete="off"
-              className="w-full px-4 py-3 rounded-lg bg-gray-800/70 border border-green-800/30 text-gray-100 placeholder-gray-500
-                         focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-400/70 transition-all duration-300"
+              id="email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Enter your email"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
+            {errors.email && (
+              <span className="text-red-400 text-sm mt-1 block">
+                {errors.email}
+              </span>
+            )}
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2">Password</label>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Password
+            </label>
             <input
+              id="password"
               type="password"
               name="password"
-              value={password}
-              onChange={setHandlerChange}
+              value={form.password}
+              onChange={handleChange}
               placeholder="Enter your password"
-              autoComplete="new-password"
-              className="w-full px-4 py-3 rounded-lg bg-gray-800/70 border border-green-800/30 text-gray-100 placeholder-gray-500
-                         focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-400/70 transition-all duration-300"
+              className="w-full px-4 py-2 rounded-lg bg-gray-900/60 border border-[#2f2f2f] text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
+            {errors.password && (
+              <span className="text-red-400 text-sm mt-1 block">
+                {errors.password}
+              </span>
+            )}
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 mt-4 text-lg font-semibold rounded-lg text-white 
-                       bg-gradient-to-r from-green-600 to-green-500 
-                       hover:from-green-500 hover:to-green-400 transition duration-300 
-                       shadow-md hover:shadow-[0_0_20px_rgba(34,197,94,0.25)]"
+            className="w-full py-2 mt-2 bg-green-700/60 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-200"
           >
-            Login
+            Sign In
           </button>
 
-          <p className="text-center text-gray-400 text-sm mt-4">
-            Don’t have an account?{" "}
-            <Link
-              to="/register-user"
-              className="text-green-400 hover:text-green-300 hover:underline transition"
-            >
-              Register here
-            </Link>
-          </p>
+          {/* 🔹 Divider */}
+          <div className="flex items-center my-4">
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+            <span className="mx-3 text-gray-500 text-sm">or</span>
+            <div className="flex-grow h-px bg-[#2a2a2a]" />
+          </div>
+
+          {/* 🔹 Google Sign-In (Coming Soon) */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            className="w-full py-2 flex items-center justify-center gap-3 bg-gray-900/60 border border-[#2f2f2f] hover:border-emerald-500/40 rounded-lg text-gray-200 hover:text-emerald-300 transition-all duration-200"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            Sign in with Google
+          </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-gray-400">
+          Don’t have an account?{" "}
+          <Link
+            to="/buyer/signup"
+            className="text-emerald-400 hover:underline hover:text-emerald-300 transition"
+          >
+            Signup here
+          </Link>
+        </p>
       </div>
+
+      {/* ✅ Shared toast system */}
+      <MessageToast
+        show={toast.show}
+        message={toast.message}
+        status={toast.status}
+         onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

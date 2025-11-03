@@ -1,6 +1,6 @@
 
 import Home from "../pages/Home";
-import Product from "../pages/Product";
+import ExploreProduct from "../components/product/ExploreProduct";
 import Profile from "../components/common/Profile";
 import Login from "../pages/LogIn";
 import Registration from "../pages/Registration";
@@ -8,7 +8,7 @@ import SingleProduct from "../pages/SingleProduct";
 import Cart from "../pages/Cart";
 import { Routes, Route } from "react-router-dom";
 import { Privateroute,Privaterouteadmin } from "../Router/ProtectedRoute";
-import Admin from "../pages/FarmerDashBoard";
+import Admin from "../components/farmer/FarmerDashBoard";
 import NotFound from "../components/common/NotFound";
 import AuctionProducts from "../pages/AuctionProducts";
 import AuctionPage from "../pages/AuctionPage";
@@ -23,12 +23,12 @@ const AllRoutes = () => {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/product" element={<Product />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/products" element={<ExploreProduct />} />
+        <Route path="/buyer/signin" element={<Login />} />
         <Route path="/auction" element={<AuctionProducts />}/>
         <Route path="/auction-page" element={<AuctionPage />}/>
 
-        <Route path="/user" element={<Privateroute />}>
+        <Route path="/buyer" element={<Privateroute />}>
           <Route path="cart" element={<Cart />} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="profile/:userid" element={<Profile />} />
@@ -40,9 +40,8 @@ const AllRoutes = () => {
           <Route path="product/details/:productId" element={<ProductDetailsForFarmer/>} />
           <Route path="account" element={<FarmerAccount />} />
         </Route>
-        <Route path="/register-user" element={<Registration />} />
+        <Route path="/buyer/signup" element={<Registration />} />
         <Route path="/product/:productId" element={<SingleProduct />} />
-        <Route path="/products" element={<Product />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/farmer/signin" element={<FarmerSignIn/>} />
         <Route path="/farmer/signup" element={<FarmerRegistration/>}/>

@@ -60,7 +60,7 @@ function App() {
 
   // 🧠 Determine role dynamically from localStorage
   const isFarmerLoggedIn = localStorage.getItem("farmerId");
-  const isBuyerLoggedIn = localStorage.getItem("userid");
+  const isBuyerLoggedIn = localStorage.getItem("buyerId");
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-gray-100">

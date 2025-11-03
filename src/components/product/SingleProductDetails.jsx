@@ -83,7 +83,7 @@ const SingleProductDetails = () => {
           </button>
           <button
             className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all"
-            onClick={() => history.push("/admin/products")} // Navigate back to the all products page
+            onClick={() => history.push("/products")} // Navigate back to the all products page
           >
             Back to All Products
           </button>

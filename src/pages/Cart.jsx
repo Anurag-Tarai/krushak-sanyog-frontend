@@ -4,111 +4,169 @@ import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const [cartData, setCartData] = useState({});
-  const cartId = localStorage.getItem("cartid"); // Make sure cartId is retrieved correctly
+  const [cartId, setCartId] = useState(null);
+  const [cartProducts, setCartProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch cart data when cartId changes
+  const userId = localStorage.getItem("buyerId");
+  const token = localStorage.getItem("jwtToken");
+
+  // STEP 1: Fetch the user's cartId
   useEffect(() => {
-    if (cartId) {
-      fetchCartData();
+    const fetchCartId = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/api/v1/cart/buyer/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const fetchedCartId = res.data.cartId;
+        setCartId(fetchedCartId);
+        localStorage.setItem("cartid", fetchedCartId);
+      } catch (err) {
+        console.error("Error fetching cart ID:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) fetchCartId();
+  }, [userId, token]);
+
+  // STEP 2: Fetch cart products once we have cartId
+  useEffect(() => {
+    const fetchCartProducts = async () => {
+      if (!cartId) return;
+      try {
+        setLoading(true);
+        const res = await api.get(`/api/v1/cart/products/${cartId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCartProducts(res.data.products || []);
+      } catch (err) {
+        console.error("Error fetching cart products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCartProducts();
+  }, [cartId, token]);
+
+  // ✅ Remove a product from cart
+  const removeProductFromCart = async (productId) => {
+    try {
+      await api.delete(`/api/v1/cart/remove/${cartId}/${productId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCartProducts((prev) =>
+        prev.filter((item) => item.productId !== productId)
+      );
+    } catch (err) {
+      console.error("Error removing product:", err);
     }
-  }, [cartId]); // Dependency array ensures this effect runs when cartId changes
-
-  const fetchCartData = () => {
-    console.log("fetching cart data");
-
-    api
-      .get(`/ecom/cart/products/${cartId}`)
-      .then((response) => {
-        setCartData(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data from the API: ", error);
-      });
   };
 
-  // Remove product from cart
-  const removeProductFromCart = (productId) => {
-    api
-      .delete(`/ecom/cart/remove-product/${cartId}/${productId}`)
-      .then(() => {
-        fetchCartData(); // Refresh cart data after removing a product
-      })
-      .catch((error) => {
-        console.error("Error removing product from cart: ", error);
+  // ✅ Empty entire cart
+  const emptyCart = async () => {
+    try {
+      await api.delete(`/api/v1/cart/empty/${cartId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      setCartProducts([]);
+    } catch (err) {
+      console.error("Error emptying cart:", err);
+    }
   };
 
-  // Handle viewing product details
+  // ✅ Go to product details
   const handleViewDetails = (productId) => {
-    navigate(`/product/${productId}`); // Dynamically pass productId
+    navigate(`/product/${productId}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-gray-300">
+        Loading your cart...
+      </div>
+    );
+  }
 
   return (
-    <div className="cart-page">
-      {cartData.cartItems?.length > 0 ? (
-        <div className="cart-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {cartData.cartItems.map((item) => (
-            <div
-              className="product-card w-98 border border-b-slate-600 rounded-lg shadow-lg p-3 bg-white transition-shadow duration-200 hover:shadow-xl"
-              key={item.product.productId}
+    <div className="cart-page p-6 text-gray-200 min-h-screen bg-gradient-to-b from-[#0b0b0b] via-[#111] to-[#161616]">
+      {cartProducts.length > 0 ? (
+        <>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-semibold text-green-400">
+              Your Cart ({cartProducts.length})
+            </h1>
+            <button
+              onClick={emptyCart}
+              className="bg-red-700/80 hover:bg-red-600 px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg"
             >
-              <div className="product-image mb-2 overflow-hidden rounded-lg">
-                <img
-                  src={item.product.imageUrl}
-                  alt={item.product.name}
-                  className="w-full h-40 object-cover" // Reduced image height
-                />
-              </div>
-              <div className="product-info">
-                <h2 className="text-xl font-bold text-green-700 mb-1">
-                  {item.product.name}
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  <strong>Category:</strong>{" "}
-                  <span className="text-green-500">{item.product.category}</span>
-                </p>
-                <p className="text-gray-600 text-sm">
-                  <strong>Description:</strong>{" "}
-                  {item.product.description.length > 25
-                    ? `${item.product.description.substring(0, 25)}...`
-                    : item.product.description}
-                </p>
-                <p className="text-gray-600 text-sm">
-                  <strong>Address:</strong>{" "}
-                  {item.product.address?
-              `${item.product.address?.substring(0, 25)}...`
-                    : "Not Available"}
-                </p>
-                <h2 className="product-price text-lg font-bold text-green-600 mt-2">
-                  Available quantity: {item.product.price} kg
-                </h2>
+              Empty Cart
+            </button>
+          </div>
 
-                <div className="flex justify-between mt-4">
-                  <button
-                    onClick={() => removeProductFromCart(item.product.productId)}
-                    className="bg-red-700 text-white rounded px-4 py-2 hover:bg-red-600 transition shadow-md hover:shadow-lg"
-                  >
-                    Remove from Cart
-                  </button>
-                  <button
-                    onClick={() => handleViewDetails(item.product.productId)}
-                    className="bg-slate-700 text-white rounded px-4 py-2 hover:bg-slate-800 transition shadow-md hover:shadow-lg"
-                  >
-                    View Details
-                  </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {cartProducts.map((product) => (
+              <div
+                key={product.productId}
+                className="bg-gray-900/60 border border-gray-800/60 rounded-xl shadow-lg overflow-hidden transition hover:shadow-green-800/20"
+              >
+                <div className="h-40 overflow-hidden">
+                  <img
+                    src={product.imageUrls?.[0] || "/placeholder.png"}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+
+                <div className="p-4 space-y-2">
+                  <h2 className="text-lg font-semibold text-gray-100">
+                    {product.name}
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    Category:{" "}
+                    <span className="text-green-400">{product.category}</span>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Address: {product.address || "Not provided"}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Quantity: {product.quantity} kg
+                  </p>
+
+                  <div className="flex justify-between mt-4">
+                    <button
+                      onClick={() => removeProductFromCart(product.productId)}
+                      className="bg-red-700/80 hover:bg-red-600 px-3 py-2 text-sm rounded-md transition shadow-md"
+                    >
+                      Remove
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(product.productId)}
+                      className="bg-green-700/80 hover:bg-green-600 px-3 py-2 text-sm rounded-md transition shadow-md"
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       ) : (
-        <div className="empty-cart-message">
-          <h1>Your cart is empty.</h1>
+        <div className="text-center py-20 text-gray-400">
+          <h1 className="text-xl font-medium">🛒 Your cart is empty</h1>
+          <button
+            onClick={() => navigate("/products")}
+            className="mt-4 px-6 py-2 bg-green-700/80 hover:bg-green-600 rounded-md text-sm transition"
+          >
+            Explore Products
+          </button>
         </div>
       )}
     </div>
   );
 };
-
 export default Cart;
