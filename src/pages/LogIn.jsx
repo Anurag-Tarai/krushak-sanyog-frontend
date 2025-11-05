@@ -45,40 +45,46 @@ const Login = () => {
   };
 
   const submitHandler = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    try {
-      showToast("Processing login...", "info");
-      const role = "ROLE_BUYER";
-      const res = await axios.post(
-        "http://localhost:8080/api/v1/auth/login",
-        { ...form, role },
-        { headers: { "Content-Type": "application/json" } }
-      );
+  try {
+    showToast("Processing login...", "info");
 
-      const { token, userId, name } = res.data;
-
-      if (token) {
-        localStorage.setItem("jwtToken", token);
-        localStorage.setItem("buyerId", userId);
-        localStorage.setItem("name", name || "Buyer");
-        localStorage.setItem("role", "buyer");
-
-        showToast("Signed in successfully ✅", "success");
-
-        setTimeout(() => navigate("/products"), 1500);
-      } else {
-        showToast("Invalid credentials or missing token.", "error");
+    const role = "ROLE_BUYER";
+    const res = await axios.post(
+      "http://localhost:8080/api/v1/auth/login",
+      { ...form, role },
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true, // ✅ make sure cookies are saved
       }
-    } catch (error) {
-      if (error.response?.status === 401)
-        showToast("Invalid credentials. Please try again.", "error");
-      else if (error.response?.status === 403)
-        showToast("Access denied. You are not a buyer.", "error");
-      else showToast("Server error. Please try again later.", "error");
+    );
+
+    // ✅ Check for null or empty response
+    if (!res || !res.data) {
+      throw new Error("Response is null or empty");
     }
-  };
+
+    const { name, role: userRole } = res.data;
+
+    // ✅ Store non-sensitive info only
+    localStorage.setItem("name", name || "Buyer");
+    localStorage.setItem("role", userRole || "ROLE_BUYER");
+
+    showToast("Signed in successfully ✅", "success");
+
+    setTimeout(() => navigate("/products"), 1500);
+  } catch (error) {
+    if (error.response?.status === 401)
+      showToast("Invalid credentials. Please try again.", "error");
+    else if (error.response?.status === 403)
+      showToast("Access denied. You are not a buyer.", "error");
+    else showToast("Server error. Please try again later.", "error");
+    console.error(error); // optional: log the error
+  }
+};
+
 
   // ⚡ Handle Google Sign-in (coming soon)
   const handleGoogleSignIn = () => {
@@ -174,7 +180,7 @@ const Login = () => {
             to="/buyer/signup"
             className="text-emerald-400 hover:underline hover:text-emerald-300 transition"
           >
-            Signup here
+            Sign up here
           </Link>
         </p>
       </div>

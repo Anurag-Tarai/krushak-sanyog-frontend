@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../Router/api";
 import LocationMap from "../map/LocationMap";
 import MessageToast from "../common/MessageToast";
+import api from "../../api/api";
 
 const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
   const navigate = useNavigate();
@@ -22,8 +22,6 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // ✅ Fixed: use `status` instead of `type`
   const [toast, setToast] = useState({ show: false, message: "", status: "" });
   const hideToast = () => setToast({ ...toast, show: false });
 
@@ -119,37 +117,19 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
       return;
     }
 
-    const userId = localStorage.getItem("farmerId");
-    const token = localStorage.getItem("jwtToken");
 
-    if (!userId || !token) {
-      setToast({
-        show: true,
-        message: !userId
-          ? "User ID not found."
-          : "Authorization token not found.",
-        status: "error",
-      });
-      setLoading(false);
-      return;
-    }
 
     const formData = new FormData();
     formData.append(
       "product",
-      new Blob([JSON.stringify({ ...product, farmer_id: userId })], {
+      new Blob([JSON.stringify({ ...product})], {
         type: "application/json",
       })
     );
     images.forEach((file) => formData.append("images", file));
 
     try {
-      await api.post("/api/v1/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.post("/api/v1/products", formData);
 
       setToast({
         show: true,
@@ -185,23 +165,23 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
 
   return (
     <>
-      <div className="relative rounded-2xl bg-gray-900/40 border border-gray-900/60 backdrop-blur-md text-gray-100 p-8 shadow-2xl transition-all duration-500 h-[85vh] overflow-y-auto custom-scrollbar">
+      <div className="relative rounded-2xl bg-gray-900/40 border border-gray-900/60 backdrop-blur-md text-gray-100 
+                      p-4 sm:p-6 md:p-8 shadow-2xl transition-all duration-500 
+                      h-auto md:h-[85vh] overflow-y-auto custom-scrollbar">
+        {/* 🧭 Title */}
         <h2
-          className="text-3xl font-bold text-center mb-10 text-gray-400 tracking-[0.08em] uppercase 
-                 border-b border-gray-700/50 inline-block pb-2 mx-44"
+          className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10 text-gray-400 tracking-[0.08em] uppercase 
+                     border-b border-gray-700/50 inline-block pb-2 px-4 sm:px-0"
         >
           🌾 Add New Product
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* 🔹 All original fields remain untouched */}
+          {/* 🔹 Form Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name, Quantity, Category, Variants */}
+            {/* Product Name */}
             <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-300 mb-1"
-              >
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
                 Product Name
               </label>
               <input
@@ -210,17 +190,16 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
                 name="name"
                 value={product.name}
                 onChange={handleChange}
-                className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 
+                           focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Enter product name"
                 required
               />
             </div>
 
+            {/* Quantity */}
             <div>
-              <label
-                htmlFor="quantity"
-                className="block text-sm font-medium text-gray-300 mb-1"
-              >
+              <label htmlFor="quantity" className="block text-sm font-medium text-gray-300 mb-1">
                 Available Quantity (kg)
               </label>
               <input
@@ -229,64 +208,55 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
                 name="quantity"
                 value={product.quantity}
                 onChange={handleChange}
-                className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 
+                           focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="Enter quantity"
                 min="0"
                 required
               />
             </div>
 
+            {/* Category */}
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-2">
-  Category
-</label>
-<div className="relative">
-  <select
-    id="category"
-    name="category"
-    value={product.category}
-    onChange={handleChange}
-    className="w-full appearance-none bg-gray-900/60 border border-gray-800 text-gray-100 rounded-lg p-3 pr-10
-               focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
-               transition duration-150 ease-in-out cursor-pointer"
-    required
-    style={{
-      colorScheme: 'dark', // ensures consistent dark dropdown style
-    }}
-  >
-    <option value="" disabled className="text-green-400 bg-red-500">
-      Select a category
-    </option>
-    {categories.map((cat) => (
-      <option
-        key={cat.value}
-        value={cat.value}
-        className="bg-gray-900 text-gray-100 hover:bg-emerald-600 hover:text-white"
-      >
-        {cat.name}
-      </option>
-    ))}
-  </select>
-
-  {/* Custom dropdown arrow */}
-  <svg
-    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-  </svg>
-</div>
-
+                Category
+              </label>
+              <div className="relative">
+                <select
+                  id="category"
+                  name="category"
+                  value={product.category}
+                  onChange={handleChange}
+                  className="w-full appearance-none bg-gray-900/60 border border-gray-800 text-gray-100 
+                             rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-emerald-500 
+                             focus:border-emerald-500 transition duration-150 ease-in-out cursor-pointer"
+                  required
+                  style={{ colorScheme: "dark" }}
+                >
+                  <option value="" disabled>
+                    Select a category
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
+            {/* Variants */}
             <div>
-              <label
-                htmlFor="variants"
-                className="block text-sm font-medium text-gray-300 mb-1"
-              >
+              <label htmlFor="variants" className="block text-sm font-medium text-gray-300 mb-1">
                 Product Variants (comma-separated)
               </label>
               <input
@@ -295,7 +265,8 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
                 name="variants"
                 value={product.variants}
                 onChange={handleChange}
-                className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 
+                           focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 placeholder="e.g., Basmati, Jira, Usuna"
               />
             </div>
@@ -303,10 +274,7 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
 
           {/* Description */}
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
+            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
               Description
             </label>
             <textarea
@@ -314,7 +282,8 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
               name="description"
               value={product.description}
               onChange={handleChange}
-              className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 
+                         focus:outline-none focus:ring-2 focus:ring-emerald-500"
               rows="3"
               placeholder="Enter product description"
               required
@@ -323,10 +292,7 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
 
           {/* Address */}
           <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
+            <label htmlFor="address" className="block text-sm font-medium text-gray-300 mb-1">
               Address
             </label>
             <input
@@ -335,18 +301,16 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
               name="address"
               value={product.address}
               onChange={handleChange}
-              className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-gray-900/40 border border-gray-800/60 text-gray-100 rounded-lg p-3 
+                         focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="Enter address"
               required
             />
           </div>
 
-          {/* Images */}
+          {/* Image Upload */}
           <div>
-            <label
-              htmlFor="images"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
+            <label htmlFor="images" className="block text-sm font-medium text-gray-300 mb-1">
               Upload Images
             </label>
             <input
@@ -355,12 +319,14 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
               multiple
               accept="image/*"
               onChange={handleImagesChange}
-              className="w-full text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-700 file:text-white hover:file:bg-emerald-600 transition-all"
+              className="w-full text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 
+                         file:text-sm file:font-semibold file:bg-emerald-700 file:text-white hover:file:bg-emerald-600 
+                         transition-all"
             />
           </div>
 
-          {/* Image preview */}
-          <div className="flex flex-row gap-4 mt-3 overflow-x-auto custom-scrollbar">
+          {/* Image Preview */}
+          <div className="flex flex-wrap sm:flex-nowrap flex-row gap-4 mt-3 overflow-x-auto custom-scrollbar">
             {images.map((file, index) => (
               <div key={index} className="relative">
                 <img
@@ -372,7 +338,8 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-0 right-0 bg-red-700 hover:bg-red-800 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center transition-all"
+                  className="absolute top-0 right-0 bg-red-700 hover:bg-red-800 text-white 
+                             rounded-full w-5 h-5 text-xs flex items-center justify-center transition-all"
                 >
                   ×
                 </button>
@@ -380,13 +347,13 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
             ))}
           </div>
 
-          {/* 🗺️ Map + Search */}
+          {/* Map + Buttons */}
           <div className="mt-4">
-            <div className="flex justify-between mb-2">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2 sm:gap-0">
               <label className="block text-sm font-medium text-gray-300">
                 Product Location
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-start sm:justify-end">
                 <button
                   type="button"
                   onClick={handleSelectCurrentLocation}
@@ -419,31 +386,27 @@ const AddProduct = ({ setRefreshProducts, setSelectedComponent }) => {
             />
 
             {product.latitude && product.longitude && (
-              <p className="text-xs text-gray-400 mt-2">
-                📍 Selected: {product.latitude.toFixed(5)},{" "}
-                {product.longitude.toFixed(5)}
+              <p className="text-xs text-gray-400 mt-2 break-words">
+                📍 Selected: {product.latitude.toFixed(5)}, {product.longitude.toFixed(5)}
               </p>
             )}
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-emerald-600/30 transition-all duration-300"
+            className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold 
+                       py-3 rounded-xl shadow-lg hover:shadow-emerald-600/30 transition-all duration-300"
           >
             {loading ? "Processing..." : "Add Product"}
           </button>
         </form>
 
-        {/* ✅ Toast (now fully functional) */}
-        <MessageToast
-          show={toast.show}
-          onClose={hideToast}
-          message={toast.message}
-          status={toast.status}
-        />
+        {/* Toast */}
+        <MessageToast show={toast.show} onClose={hideToast} message={toast.message} status={toast.status} />
 
-        {/* Scrollbar Style */}
+        {/* Scrollbar */}
         <style>
           {`
             .custom-scrollbar::-webkit-scrollbar {}

@@ -1,2 +1,8 @@
-export const GOOGLE_MAP_API = "AIzaSyBwlwKGsMM3b2zUZ0e_qlBdtpCysf22OY4";
-export const GO_MAP_API = "AlzaSyhGJZsOu-CEybftkhpgrW-tRgeybE50UQs"; //gomaps.pro
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://localhost:8080", // backend URL
+  withCredentials: true,             // ✅ send cookies automatically
+});
+
+export default api;

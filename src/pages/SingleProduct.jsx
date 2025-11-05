@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Send, ShoppingCart, User } from "lucide-react";
-import api from "../Router/api";
+import api from "../api/api";
 
 import "leaflet/dist/leaflet.css";
 import SingleProductMap from "../components/map/SingleProductMap";
@@ -20,8 +20,7 @@ const ImageSlider = React.lazy(() => import("../components/common/ImageSlider"))
 const SingleProduct = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem("jwtToken");
-  const userId = localStorage.getItem("buyerId");
+  const name = localStorage.getItem("name");
 
   const [product, setProduct] = useState(null);
   const [farmer, setFarmer] = useState(null);
@@ -32,32 +31,34 @@ const SingleProduct = () => {
     status: "info",
   });
 
+  const showToast = (message, status = "info") => {
+    setToast({ show: true, message, status });
+  };
 
-  console.log(product);
-  console.log(farmer);
+
   
-  
+    const showSignInMessage = () => {
+    showToast("Sign in required — redirecting...", "warning");
+    setTimeout(() => navigate("/buyer/signin"), 2000);
+  };
+
+
 
  useEffect(() => {
   let isMounted = true;
 
   const fetchData = async () => {
     try {
-      const productRes = await api.get(`/api/v1/products/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const productRes = await api.get(`/api/v1/products/${productId}`);
       const fetchedProduct = productRes.data;
       if (!isMounted) return;
 
       setProduct(fetchedProduct);
 
-      if (fetchedProduct?.farmerId) {
-        const farmerRes = await api.get(
-          `/api/v1/user/${fetchedProduct.farmerId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (isMounted) setFarmer(farmerRes.data);
-      }
+      const id = fetchedProduct.farmerId;
+
+      const res = await api.get(`/api/v1/user/`+id);
+      setFarmer(res.data);
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
@@ -72,7 +73,7 @@ const SingleProduct = () => {
   return () => {
     isMounted = false;
   };
-}, [productId, token]);
+}, []);
 
 
   const fadeUp = {
@@ -93,6 +94,7 @@ const SingleProduct = () => {
         </div>
       );
 
+
     return (
       <div className="rounded-lg overflow-visible border border-gray-800 relative z-10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
         <div className="w-full h-64 relative">
@@ -106,17 +108,19 @@ const SingleProduct = () => {
     );
   }, [loading, product?.latitude, product?.longitude, product?.name]);
 
-  const addToCart = async () => {
-    try {
-      await api.post(`/ecom/cart/add-product?userId=${userId}&productId=${productId}`);
-      setToast({ show: true, message: "Product added to cart 🛒", status: "success" });
-    } catch (err) {
-      setToast({
-        show: true,
-        message: "Product already in cart or failed to add.",
-        status: "error",
+ 
+  const addToCart = (productid) => {
+    if (!name) return showSignInMessage();
+
+    api
+      .post(`/api/v1/wishlist/add?productId=${productid}`)
+      .then((res) => {
+        navigate("/buyer/wishlist");
+      })
+      .catch((err) => {
+        if (err.response?.status === 401) navigate("/login");
+        else showToast(err.response?.data?.message || "Error adding to cart", "error");
       });
-    }
   };
 
   return (
@@ -182,7 +186,7 @@ const SingleProduct = () => {
                     <div className="grid grid-cols-2 gap-3 text-sm">
                        <div className="mt-8">
                       <button
-                        onClick={addToCart}
+                        onClick={() => addToCart(product.productId)}
                         className="px-6 py-3 rounded-lg bg-green-700/80 hover:bg-green-600 text-gray-100 font-medium border border-green-600/60 transition-all shadow-[0_0_10px_rgba(34,197,94,0.25)] hover:shadow-[0_0_14px_rgba(34,197,94,0.35)]"
                       >
                         Add to Cart

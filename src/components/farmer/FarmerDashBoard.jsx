@@ -56,57 +56,56 @@ const FarmerDashBoard = () => {
       {/* faint texture gradient */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.02),transparent_35%)]" />
 
-      <div className="max-w-7xl mx-auto px-6 py-10 relative z-0">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 relative z-0">
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
           {/* 🌿 Sidebar */}
-<motion.aside
-  variants={fadeUp}
-  initial="hidden"
-  animate="visible"
-  className=" mt-10 lg:col-span-1 p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 backdrop-blur-md 
-             shadow-[0_0_20px_rgba(255,255,255,0.04)] flex flex-col justify-between
-             w-[300px] h-[85vh] mx-auto lg:mx-0"
->
-  <div>
-    <ul className="mt-6 space-y-3">
-      {[
-        { name: "➕ Add New Product", value: "add-product" },
-        { name: "📦 View All Products", value: "all-products" },
-      ].map((item) => (
-        <motion.li
-          key={item.value}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setSelectedComponent(item.value)}
-          className={`cursor-pointer px-4 py-3 rounded-xl text-sm font-medium border transition-all duration-400
-            ${
-              selectedComponent === item.value
-                ? "bg-green-800/40 border-green-800/40 text-white-300 "
-                : "bg-gray-800/40 border-gray-700/60 text-gray-300 hover:bg-gray-800/60 hover:border-green-700 hover:text-green-400"
-            }`}
-        >
-          {item.name}
-        </motion.li>
-      ))}
-    </ul>
-  </div>
+          <motion.aside
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="mt-4 lg:mt-10 lg:col-span-1 p-4 sm:p-6 rounded-2xl bg-gray-900/40 border border-gray-800/60 backdrop-blur-md 
+                       shadow-[0_0_20px_rgba(255,255,255,0.04)] flex flex-col justify-between
+                       w-full sm:w-[90%] lg:w-[300px] mx-auto lg:mx-0 h-auto lg:h-[85vh]"
+          >
+            <div>
+              <ul className="mt-4 sm:mt-6 space-y-3">
+                {[
+                  { name: "➕ Add New Product", value: "add-product" },
+                  { name: "📦 View All Products", value: "all-products" },
+                ].map((item) => (
+                  <motion.li
+                    key={item.value}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedComponent(item.value)}
+                    className={`cursor-pointer px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-sm font-medium border transition-all duration-400 text-center sm:text-left
+                      ${
+                        selectedComponent === item.value
+                          ? "bg-green-800/40 border-green-800/40 text-white"
+                          : "bg-gray-800/40 border-gray-700/60 text-gray-300 hover:bg-gray-800/60 hover:border-green-700 hover:text-green-400"
+                      }`}
+                  >
+                    {item.name}
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
 
-  <div className="mt-10 border-t border-gray-800/60 pt-6 text-center">
-    <p className="text-xs text-gray-400">Farmer Portal v1.0</p>
-    <p className="text-green-400 text-xs mt-1 animate-pulseSlow">
-      Powered by FarmerConnect
-    </p>
-  </div>
-</motion.aside>
-
+            <div className="mt-6 sm:mt-10 border-t border-gray-800/60 pt-4 sm:pt-6 text-center">
+              <p className="text-xs text-gray-400">Farmer Portal v1.0</p>
+              <p className="text-green-400 text-xs mt-1 animate-pulseSlow">
+                Powered by FarmerConnect
+              </p>
+            </div>
+          </motion.aside>
 
           {/* 🧾 Main Section */}
           <motion.main
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="mt-10 lg:col-span-3 rounded-2xl bg-transparent border border-gray-800/60 
-shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
+            className="mt-6 lg:mt-10 lg:col-span-3 rounded-2xl bg-transparent border border-gray-800/60 
+                       shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative w-full"
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -115,7 +114,7 @@ shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4 }}
-                className="min-h-[70vh]"
+                className="min-h-[60vh] sm:min-h-[70vh]"
               >
                 {renderSelectedComponent()}
               </motion.div>
@@ -132,7 +131,7 @@ shadow-[0_0_20px_rgba(255,255,255,0.04)] backdrop-blur-md relative"
         status={toast.status}
       />
 
-       {/* 🪶 Ultra Compact Modern Scrollbar */}
+      {/* 🪶 Ultra Compact Modern Scrollbar */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {}
         .custom-scrollbar::-webkit-scrollbar-track {

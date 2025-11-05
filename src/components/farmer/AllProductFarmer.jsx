@@ -1,14 +1,13 @@
 import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import api from "../../Router/api";
+import api from "../../api/api";
 import { motion } from "framer-motion";
 
 // 💤 Lazy imports with subtle artificial delay for smooth transitions
 const delayedImport = (factory, delay = 400) =>
   new Promise((resolve) => setTimeout(() => resolve(factory()), delay));
 
-// 💤 (if you want to lazy load some subcomponents later)
 const LazyImage = lazy(() => delayedImport(() => import("./LazyImage"), 200));
 
 // 🩶 Compact shimmer skeleton
@@ -29,23 +28,20 @@ const ProductCardSkeleton = () => (
   </div>
 );
 
-const fetchProducts = async ({ queryKey }) => {
-  const [, farmerId, token] = queryKey;
-  const res = await api.get(`/api/v1/products/farmer/${farmerId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+// fetchProducts without token/farmerId in URL
+const fetchProducts = async () => {
+  const res = await api.get("/api/v1/products/farmer"); // cookies sent automatically
   const data = res.data || [];
   return data.sort((a, b) => b.productId - a.productId);
 };
 
 const AllProductFarmerContent = ({ refresh }) => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("jwtToken");
-  const farmerId = localStorage.getItem("farmerId");
   const [statusMap, setStatusMap] = useState({});
   const [confirmId, setConfirmId] = useState(null);
   const [contentLoading, setContentLoading] = useState(true);
 
+  // ✅ useQuery with caching disabled
   const {
     data: products = [],
     isLoading,
@@ -53,14 +49,17 @@ const AllProductFarmerContent = ({ refresh }) => {
     refetch,
     error,
   } = useQuery({
-    queryKey: ["products", farmerId, token],
+    queryKey: ["products"],
     queryFn: fetchProducts,
-    enabled: !!farmerId && !!token,
-    staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 10,
+    enabled: true,
+    staleTime: 0,          // no stale cache
+    cacheTime: 0,          // remove cache immediately after unmount
+    refetchOnMount: true,  // always refetch when component mounts
+    refetchOnWindowFocus: false,
     retry: 1,
   });
 
+  // Refresh manually if prop changes
   useEffect(() => {
     if (refresh) refetch();
   }, [refresh, refetch]);
@@ -69,7 +68,6 @@ const AllProductFarmerContent = ({ refresh }) => {
     if (isLoading) {
       setContentLoading(true);
     } else {
-      // Small delay for smoother load transition
       const timeout = setTimeout(() => setContentLoading(false), 400);
       return () => clearTimeout(timeout);
     }
@@ -81,9 +79,7 @@ const AllProductFarmerContent = ({ refresh }) => {
     setStatusMap((prev) => ({ ...prev, [id]: "processing" }));
     setConfirmId(null);
     try {
-      await api.delete(`/api/v1/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/v1/products/${id}`);
       setStatusMap((prev) => ({ ...prev, [id]: "deleted" }));
       setTimeout(() => {
         refetch();
@@ -183,7 +179,7 @@ const AllProductFarmerContent = ({ refresh }) => {
             layout
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {products.map((product, index) => {
+            {products.map((product) => {
               const imageUrl =
                 product.imageUrls?.[0]?.startsWith("http")
                   ? product.imageUrls[0]
@@ -192,15 +188,16 @@ const AllProductFarmerContent = ({ refresh }) => {
 
               return (
                 <motion.div
-                  className="group relative border bg-gray-950/60 border-transparent hover:border-green-800/0 hover:bg-green-800/30  rounded-xl p-3 backdrop-blur-sm transition-all duration-300 cursor-pointer flex flex-col"
+                  key={product.productId}
+                  className="group relative border bg-gray-950/60 border-transparent hover:border-green-800/0 hover:bg-green-800/30 rounded-xl p-3 backdrop-blur-sm transition-all duration-300 cursor-pointer flex flex-col"
                   onClick={() => handleViewDetails(product.productId)}
                 >
-                  {/* Image (Suspense for lazy smooth fade) */}
-                  <Suspense fallback={<Skeleton className="w-full h-44 mb-3 rounded-xl" />}>
+                  <Suspense
+                    fallback={<Skeleton className="w-full h-44 mb-3 rounded-xl" />}
+                  >
                     <LazyImage src={imageUrl} alt={product.name || "Product"} />
                   </Suspense>
 
-                  {/* Info */}
                   <div className="flex justify-between items-center mt-3 mb-2">
                     <h2 className="text-base font-semibold text-gray-100 truncate group-hover:text-emerald-400 transition-colors">
                       {product.name}

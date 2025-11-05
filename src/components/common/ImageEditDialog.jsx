@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import api from "../../Router/api";
 import MessageToast from "../common/MessageToast"; // ✅ Import your reusable toast
 import { X } from "lucide-react";
 import { createPortal } from "react-dom";
+import api from "../../api/api";
 
 
 const MAX_IMAGES = 5;
@@ -56,7 +56,6 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -90,10 +89,7 @@ const ImageEditDialog = ({ productId, token, product, onUpdate, onClose }) => {
 
       const encodedUrl = encodeURIComponent(imageUrl);
       const response = await api.delete(
-        `/api/v1/products/${productId}/images?imageUrl=${encodedUrl}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `/api/v1/products/${productId}/images?imageUrl=${encodedUrl}`
       );
 
       onUpdate(response.data);

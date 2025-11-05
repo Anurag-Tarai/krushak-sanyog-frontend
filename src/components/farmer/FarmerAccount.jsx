@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FiUpload, FiUser } from "react-icons/fi";
 import { FaLeaf } from "react-icons/fa6";
-import api from "../../Router/api";
+import api from "../../api/api";
 import MessageToast from "../common/MessageToast";
 
 const FarmerAccount = () => {
@@ -21,8 +21,6 @@ const FarmerAccount = () => {
     status: "info",
   });
 
-  const userId = localStorage.getItem("farmerId");
-  const token = localStorage.getItem("jwtToken");
 
   const showToast = (message, status = "info") => {
     setToast({ show: true, message, status });
@@ -31,9 +29,7 @@ const FarmerAccount = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await api.get(`/api/v1/user/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get(`/api/v1/user`);
         setUser(res.data);
       } catch (err) {
         console.error("Failed to fetch user:", err);
@@ -43,7 +39,7 @@ const FarmerAccount = () => {
       }
     };
     fetchUser();
-  }, [userId, token]);
+  }, []);
 
   if (loading) {
     return (

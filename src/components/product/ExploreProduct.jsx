@@ -1,10 +1,10 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../Router/api";
 import { motion } from "framer-motion";
 
 import LocationButton from "./LocationButton";
 import MessageToast from "../common/MessageToast";
+import api from "../../api/api";
 
 // 💤 Lazy import only for heavy main component (Map)
 const delayedImport = (factory, delay = 400) =>
@@ -58,8 +58,8 @@ const ExploreProduct = () => {
   const [productLoading, setProductLoading] = useState(true);
 
   const navigate = useNavigate();
-  const userid = localStorage.getItem("farmerId");
-  const token = localStorage.getItem("jwtToken");
+  const name = localStorage.getItem("name");
+  
 
   const showToast = (message, status = "info") => setToast({ show: true, message, status });
   const hideToast = () => setToast({ ...toast, show: false });
@@ -154,7 +154,7 @@ const ExploreProduct = () => {
       filterProducts(selectedCategory, priceOrder, nameSearch, products, getActiveLocation());
       setProductLoading(false);
     }, 400);
-  }, [selectedCategory, priceOrder, nameSearch, currentLocation, selectedLocation]);
+  }, [selectedCategory, priceOrder, currentLocation, selectedLocation]);
 
   const handleUseCurrentLocation = () => {
     if (!currentLocation) {
@@ -182,13 +182,12 @@ const ExploreProduct = () => {
   };
 
   const addProductToCart = (productid) => {
-    if (!token) return showSignInMessage();
+    if (!name) return showSignInMessage();
 
     api
-      .post(`/ecom/cart/add-product?userId=${userid}&productId=${productid}`)
+      .post(`/api/v1/wishlist/add?productId=${productid}`)
       .then((res) => {
-        localStorage.setItem("cartid", res.data.cartId);
-        navigate("/user/cart");
+        navigate("/buyer/wishlist");
       })
       .catch((err) => {
         if (err.response?.status === 401) navigate("/login");
@@ -197,7 +196,7 @@ const ExploreProduct = () => {
   };
 
   const handleViewDetails = (productId) => {
-    if (!token) return showSignInMessage();
+    if (!name) return showSignInMessage();
     navigate(`/product/${productId}`);
   };
 
@@ -272,7 +271,8 @@ const ExploreProduct = () => {
           className="w-full lg:w-3/4 h-full overflow-y-auto custom-scrollbar"
         >
           {/* 🔍 Search */}
-          {/* (unchanged) */}
+          <div className="bg-transparent flex flex-col sm:flex-row items-center justify-end mb-6 sticky top-0 z-10 py-2"> <div className="flex items-center gap-2 bg-gray-900/85 border border-gray-800/60 rounded-xl p-2 w-full sm:w-[60%] md:w-[45%]"> <input type="text" placeholder="Search by name, category or address..." value={nameSearch} onChange={(e) => setNameSearch(e.target.value)} className="bg-transparent flex-grow outline-none text-gray-200 placeholder-gray-500 text-sm" /> <button onClick={() => filterProducts(selectedCategory, priceOrder, nameSearch, products, getActiveLocation()) } className="bg-green-700/60 hover:bg-green-600/70 text-white px-3 py-1 rounded-md text-sm transition" > Search </button> </div> </div>
+
 
           {/* 🧺 Product List */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">

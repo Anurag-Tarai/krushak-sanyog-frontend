@@ -9,12 +9,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import appLogo from "../../assets/appLogo2.png";
 import MessageToast from "../common/MessageToast"; // ✅ Import Toast
+import { QueryClient } from "@tanstack/react-query";
+import { logout } from "../../utils/logout";
 
 const FarmerNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [logoutStatus, setLogoutStatus] = useState("");
+
   const [toast, setToast] = useState({
     show: false,
     message: "",
@@ -22,6 +24,7 @@ const FarmerNavbar = () => {
   });
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const [logoutStatus, setLogoutStatus] = useState("");
 
   const name = localStorage.getItem("name") || "Farmer";
 
@@ -39,14 +42,27 @@ const FarmerNavbar = () => {
   };
 
   const handleLogoutConfirmed = async () => {
-    setShowLogoutConfirm(false);
-    showToast("Logging out...", "processing", 2000);
-    await new Promise((res) => setTimeout(res, 1000));
+  setShowLogoutConfirm(false);
+  showToast("Logging out...", "processing", 2000);
+
+  try {
+    
+    const res = await logout();
+    if(!res) throw Error("Failed to logout")
+
     localStorage.clear();
-    showToast("Logout successful!", "success", 2500);
+    setToast({ show: true, message: "Logout successful!", status: "success" });
+    
+    // Wait a bit for toast animation
     await new Promise((res) => setTimeout(res, 700));
-    navigate("/");
-  };
+
+    navigate("/"); // redirect to home/login page
+  } catch (err) {
+    console.error(err);
+    showToast("Logout failed. Please try again.", "error");
+  }
+};
+
 
   return (
     <>

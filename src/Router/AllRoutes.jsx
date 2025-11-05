@@ -1,11 +1,9 @@
 
 import Home from "../pages/Home";
 import ExploreProduct from "../components/product/ExploreProduct";
-import Profile from "../components/common/Profile";
 import Login from "../pages/LogIn";
 import Registration from "../pages/Registration";
 import SingleProduct from "../pages/SingleProduct";
-import Cart from "../pages/Cart";
 import { Routes, Route } from "react-router-dom";
 import { Privateroute,Privaterouteadmin } from "../Router/ProtectedRoute";
 import Admin from "../components/farmer/FarmerDashBoard";
@@ -17,6 +15,7 @@ import ProductDetailsForFarmer from "../components/farmer/ProductDetailsForFarme
 import FarmerRegistration from "../auth/FarmerRegistration";
 import FarmerSignIn from "../auth/FarmerSignIn";
 import FarmerAccount from "../components/farmer/FarmerAccount";
+import Wishlist from "../pages/Wishlist";
 
 const AllRoutes = () => {
   return (
@@ -29,9 +28,8 @@ const AllRoutes = () => {
         <Route path="/auction-page" element={<AuctionPage />}/>
 
         <Route path="/buyer" element={<Privateroute />}>
-          <Route path="cart" element={<Cart />} />
+          <Route path="wishlist" element={<Wishlist />} />
           <Route path="profile" element={<UserProfile />} />
-          <Route path="profile/:userid" element={<Profile />} />
         </Route>
 
         <Route path="/farmer" element={<Privaterouteadmin />}>

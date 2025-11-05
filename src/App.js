@@ -58,14 +58,14 @@ function App() {
     matchPath({ path, end: true }, location.pathname)
   );
 
-  // 🧠 Determine role dynamically from localStorage
-  const isFarmerLoggedIn = localStorage.getItem("farmerId");
-  const isBuyerLoggedIn = localStorage.getItem("buyerId");
+
+  const role = localStorage.getItem("role");
+  
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-gray-100">
       {/* ✅ Conditional Navbar */}
-      {isFarmerLoggedIn ? <FarmerNavbar /> : <Navbar />}
+      {role=='ROLE_FARMER' ? <FarmerNavbar /> : <Navbar />}
 
       {/* ✅ Ensure scroll-to-top on route change */}
       <ScrollToTop />
