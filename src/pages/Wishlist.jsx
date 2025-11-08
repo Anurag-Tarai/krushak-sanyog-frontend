@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -9,25 +9,23 @@ const Wishlist = () => {
   const [loading, setLoading] = useState(true);
 
   // 🔹 Fetch wishlist
-  const fetchWishlist = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/api/v1/wishlist/all");
-      const products = res.data.items || res.data || [];
-      const cleanProducts = products.map((item) => item.product || item).reverse();
-      setWishlistProducts(cleanProducts);
-      
-      
-    } catch (err) {
-      console.error("Error fetching wishlist:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchWishlist = useCallback(async () => {
+  try {
+    setLoading(true);
+    const res = await api.get("/api/v1/wishlist/all");
+    const products = res.data.items || res.data || [];
+    const cleanProducts = products.map((item) => item.product || item).reverse();
+    setWishlistProducts(cleanProducts);
+  } catch (err) {
+    console.error("Error fetching wishlist:", err);
+  } finally {
+    setLoading(false);
+  }
+}, []); // empty array → stable reference
 
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
+useEffect(() => {
+  fetchWishlist();
+}, [fetchWishlist]); 
 
   // 🔹 Remove product
   const removeFromWishlist = async (productId) => {
