@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import Farmer1 from "../assets/farmer/HomeLogo2.png";
+import Farmer1 from "../assets/HomeLogo2.png";
 
 const Home = () => {
   const missionRef = useRef(null);

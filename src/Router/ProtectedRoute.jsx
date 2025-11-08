@@ -23,8 +23,18 @@ const useAuthCheck = (roleCheckUrl) => {
   return isAuth;
 };
 
+
+const logout = () => {
+  localStorage.clear()
+};
+
 const Privateroute = () => {
   const isAuth = useAuthCheck("/api/v1/auth/validate-buyer"); 
+   useEffect(() => {
+    if (isAuth === false) {
+      logout();
+    }
+  }, [isAuth]);
 
   if (isAuth === null) return <div>Loading...</div>; 
   return isAuth ? <Outlet /> : <Navigate to="/buyer/signin" />;
@@ -32,6 +42,12 @@ const Privateroute = () => {
 
 const Privaterouteadmin = () => {
   const isAuth = useAuthCheck("/api/v1/auth/validate-farmer"); 
+
+  useEffect(() => {
+    if (isAuth === false) {
+      logout();
+    }
+  }, [isAuth]);
 
   if (isAuth === null) return <div>Loading...</div>;
   return isAuth ? <Outlet /> : <Navigate to="/farmer/signin" />;

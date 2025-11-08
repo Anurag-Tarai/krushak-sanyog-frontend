@@ -289,6 +289,7 @@ const ExploreProduct = () => {
                 filteredProducts.map((product) => (
                   <motion.div
                     key={product.productId}
+
                     className="bg-gray-950/40 border border-gray-950/40 rounded-2xl p-3
                                backdrop-blur-md hover:bg-green-800/40 transition-all"
                   >

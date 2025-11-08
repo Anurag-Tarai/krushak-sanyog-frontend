@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080", // backend URL
+  baseURL: "https://farmerconnect-backend-1-0.onrender.com/", // backend URL
   withCredentials: true,             // ✅ send cookies automatically
 });
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import MessageToast from "../components/common/MessageToast";
+import api from "../api/api";
 
 const initialFormData = {
   email: "",
@@ -52,8 +52,8 @@ const Login = () => {
     showToast("Processing login...", "info");
 
     const role = "ROLE_BUYER";
-    const res = await axios.post(
-      "http://localhost:8080/api/v1/auth/login",
+    const res = await api.post(
+      "/api/v1/auth/login",
       { ...form, role },
       {
         headers: { "Content-Type": "application/json" },

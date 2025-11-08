@@ -1,15 +1,14 @@
 
 import Home from "../pages/Home";
 import ExploreProduct from "../components/product/ExploreProduct";
-import Login from "../pages/LogIn";
-import Registration from "../pages/Registration";
+import Login from "../auth/BuyerSignin";
+import Registration from "../auth/BuyerRegistration";
 import SingleProduct from "../pages/SingleProduct";
 import { Routes, Route } from "react-router-dom";
 import { Privateroute,Privaterouteadmin } from "../Router/ProtectedRoute";
 import Admin from "../components/farmer/FarmerDashBoard";
 import NotFound from "../components/common/NotFound";
-import AuctionProducts from "../pages/AuctionProducts";
-import AuctionPage from "../pages/AuctionPage";
+
 import UserProfile from "../pages/UserProfile";
 import ProductDetailsForFarmer from "../components/farmer/ProductDetailsForFarmer";
 import FarmerRegistration from "../auth/FarmerRegistration";
@@ -24,8 +23,7 @@ const AllRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ExploreProduct />} />
         <Route path="/buyer/signin" element={<Login />} />
-        <Route path="/auction" element={<AuctionProducts />}/>
-        <Route path="/auction-page" element={<AuctionPage />}/>
+        
 
         <Route path="/buyer" element={<Privateroute />}>
           <Route path="wishlist" element={<Wishlist />} />
