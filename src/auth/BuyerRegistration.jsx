@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import MessageToast from "../components/common/MessageToast";
+import api from "../api/api";
 
 const initialFormData = {
   email: "",
@@ -64,8 +65,8 @@ const Registration = () => {
     showToast("Processing registration...", "info");
 
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/v1/auth/register",
+      const response = await api.post(
+        "/api/v1/auth/register",
         { ...form, role: "ROLE_BUYER" }
       );
 

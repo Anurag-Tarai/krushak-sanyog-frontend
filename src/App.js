@@ -21,30 +21,6 @@ function App() {
     setToast({ show: true, message, status });
   };
 
-  // 🧠 Check JWT expiry once on mount
-  useEffect(() => {
-  // showToast("Checking expiry of JWT...", "info");
-
-  const token = localStorage.getItem("jwtToken");
-  if (!token) return;
-
-  if (isTokenExpired(token)) {
-    console.log("❌ Session expired");
-    showToast("Session expired!", "error");
-
-    localStorage.clear();
-
-    // Wait long enough for the toast to be visible
-    const timer = setTimeout(() => {
-      window.location.replace("/farmer/signin");
-    }, 2500);
-
-    // Cleanup in case component unmounts
-    return () => clearTimeout(timer);
-  } else {
-    console.log("✅ Token still valid");
-  }
-}, []);
 
 
   const location = useLocation();
@@ -65,7 +41,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen bg-black text-gray-100">
       {/* ✅ Conditional Navbar */}
-      {role=='ROLE_FARMER' ? <FarmerNavbar /> : <Navbar />}
+      {role==='ROLE_FARMER' ? <FarmerNavbar /> : <Navbar />}
 
       {/* ✅ Ensure scroll-to-top on route change */}
       <ScrollToTop />

@@ -7,15 +7,12 @@ const Wishlist = () => {
   const navigate = useNavigate();
   const [wishlistProducts, setWishlistProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("jwtToken");
 
   // 🔹 Fetch wishlist
   const fetchWishlist = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/v1/wishlist/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/api/v1/wishlist/all");
       const products = res.data.items || res.data || [];
       const cleanProducts = products.map((item) => item.product || item).reverse();
       setWishlistProducts(cleanProducts);
@@ -30,14 +27,12 @@ const Wishlist = () => {
 
   useEffect(() => {
     fetchWishlist();
-  }, [token]);
+  }, []);
 
   // 🔹 Remove product
   const removeFromWishlist = async (productId) => {
     try {
-      await api.delete(`/api/v1/wishlist/remove?productId=${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/v1/wishlist/remove?productId=${productId}`);
       setWishlistProducts((prev) =>
         prev.filter((item) => item.productId !== productId)
       );
