@@ -8,6 +8,7 @@ import Footer from "./components/common/Footer";
 import ScrollToTop from "./components/common/ScrollToTop";
 import { isTokenExpired } from "./utils/jwtExpire"; 
 import MessageToast from "./components/common/MessageToast";
+import api from "./api/api";
 
 function App() {
   const [toast, setToast] = useState({
@@ -36,6 +37,19 @@ function App() {
 
 
   const role = localStorage.getItem("role");
+
+
+  setInterval(() => {
+  (async () => {
+    try {
+      const res = await api.get("/health-check");
+      console.log(res.data);
+    } catch (err) {
+      console.error("Health check failed:", err);
+    }
+  })();
+}, 900000); // every 500ms
+
   
 
   return (
