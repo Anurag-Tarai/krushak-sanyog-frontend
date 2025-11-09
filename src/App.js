@@ -38,19 +38,38 @@ function App() {
 
   const role = localStorage.getItem("role");
 
+useEffect(() => {
+  const checkHealth = async () => {
+    const currentTime = new Date().toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour12: true,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
 
-  setInterval(() => {
-  (async () => {
+    console.log(`[${currentTime}] Checking server health...`);
+
     try {
       const res = await api.get("/health-check");
-      console.log(res.data);
+      console.log(`[${currentTime}] FARMER CONNECT SERVER IS UP`);
     } catch (err) {
-      console.error("Health check failed:", err);
+      console.error(`[${currentTime}] Health check failed:`, err);
     }
-  })();
-}, 900000); // every 500ms
+  };
 
-  
+  // Run immediately once when the app starts
+  checkHealth();
+
+  // Run every 14 minutes
+  const interval = setInterval(checkHealth, 14 * 60 * 1000); // 14 min = 840000 ms
+
+  // Cleanup on unmount
+  return () => clearInterval(interval);
+}, []);
+
+
+
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-gray-100">
