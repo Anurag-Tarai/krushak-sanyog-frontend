@@ -60,11 +60,9 @@ const ExploreProduct = () => {
   const navigate = useNavigate();
   const name = localStorage.getItem("name");
   
-
   const showToast = (message, status = "info") => setToast({ show: true, message, status });
   const hideToast = () => setToast({ ...toast, show: false });
 
-  // 🔹 Fix for same coordinates — slight offset to overlapping markers
   const getAdjustedProducts = (data) => {
     const seen = new Map();
     return data.map((p) => {
@@ -201,37 +199,37 @@ const ExploreProduct = () => {
   };
 
   return (
-    <div className="relative bg-gradient-to-b from-[#070707] via-[#0e0e0f] to-[#141416] text-gray-200 pt-24 px-4 lg:px-10">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 h-[calc(100vh-6rem)]">
+    <div className="relative bg-gradient-to-b from-[#070707] via-[#0e0e0f] to-[#141416] text-gray-200 pt-24 px-4 sm:px-6 lg:px-10">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-[calc(100vh-6rem)]">
         {/* 🧩 Sidebar */}
         <motion.aside
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-2 w-full lg:w-2/4 bg-gray-900/40 border border-gray-800/60 backdrop-blur-md rounded-2xl p-6 
-                     shadow-[0_0_25px_rgba(255,255,255,0.04)] overflow-y-auto custom-scrollbar"
+          className="mb-4 w-full lg:w-2/4 bg-gray-900/40 border border-gray-800/60 backdrop-blur-md rounded-2xl p-4 sm:p-6
+                     shadow-[0_0_25px_rgba(255,255,255,0.04)] overflow-y-auto custom-scrollbar
+                     max-h-[50vh] lg:max-h-full"
         >
           {sidebarLoading ? (
             <SidebarSkeleton />
           ) : (
             <>
-              {/* ... Sidebar unchanged ... */}
-              <h2 className="text-lg font-semibold text-green-400 mb-4 tracking-tight">Filters</h2>
-              <label className="block text-gray-400 text-sm mb-1">Category</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-gray-800/60 border border-gray-700/60 text-gray-200 rounded-lg p-2 w-full text-sm focus:ring-2 focus:ring-green-500/40"
-              >
-                <option value="All">All</option>
-                <option value="vegetables">Vegetables</option>
-                <option value="fruits">Fruits</option>
-                <option value="dairyProducts">Dairy Products</option>
-                <option value="dryFruits">Dry Fruits</option>
-              </select>
+              <div className="flex flex-col sm:flex-row flex-wrap items-end gap-4 mb-4">
+                <div className="flex-grow w-full sm:w-auto">
+                  <label className="block text-gray-400 text-sm mb-1">Category</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="bg-gray-800/60 border border-gray-700/60 text-gray-200 rounded-lg p-2 w-full text-sm focus:ring-2 focus:ring-green-500/40"
+                  >
+                    <option value="All">All</option>
+                    <option value="vegetables">Vegetables</option>
+                    <option value="fruits">Fruits</option>
+                    <option value="dairyProducts">Dairy Products</option>
+                    <option value="dryFruits">Dry Fruits</option>
+                  </select>
+                </div>
 
-              <div className="mt-6">
-                <p className="text-gray-400 text-sm mb-2 font-medium">Location Filter</p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
                   <LocationButton onClick={handleUseCurrentLocation} active={!!currentLocation} />
                   <button
                     onClick={() => {
@@ -239,15 +237,15 @@ const ExploreProduct = () => {
                       setCurrentLocation(null);
                       filterProducts(selectedCategory, priceOrder, nameSearch, products, null);
                     }}
-                    className="bg-gray-800/60 hover:bg-gray-700/70 text-gray-200 text-xs px-3 py-2 rounded-lg border border-gray-700/60 transition"
+                    className="bg-gray-800/60 hover:bg-gray-700/70 text-gray-200 px-3 py-2 rounded-md border border-gray-700/60 transition text-sm font-medium"
                   >
                     Reset
                   </button>
                 </div>
               </div>
 
-              <div className="mt-6 border border-gray-800/60 rounded-xl overflow-hidden shadow-inner bg-gray-900/30">
-                <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+              <div className="border border-gray-800/60 rounded-xl overflow-hidden shadow-inner bg-gray-900/30 h-64 sm:h-80 lg:h-[26rem]">
+                <Suspense fallback={<Skeleton className="h-full w-full rounded-xl" />}>
                   <LocationMap
                     latitude={getActiveLocation()?.lat}
                     longitude={getActiveLocation()?.lng}
@@ -271,8 +269,25 @@ const ExploreProduct = () => {
           className="w-full lg:w-3/4 h-full overflow-y-auto custom-scrollbar"
         >
           {/* 🔍 Search */}
-          <div className="bg-transparent flex flex-col sm:flex-row items-center justify-end mb-6 sticky top-0 z-10 py-2"> <div className="flex items-center gap-2 bg-gray-900/85 border border-gray-800/60 rounded-xl p-2 w-full sm:w-[60%] md:w-[45%]"> <input type="text" placeholder="Search by name, category or address..." value={nameSearch} onChange={(e) => setNameSearch(e.target.value)} className="bg-transparent flex-grow outline-none text-gray-200 placeholder-gray-500 text-sm" /> <button onClick={() => filterProducts(selectedCategory, priceOrder, nameSearch, products, getActiveLocation()) } className="bg-green-700/60 hover:bg-green-600/70 text-white px-3 py-1 rounded-md text-sm transition" > Search </button> </div> </div>
-
+          <div className="bg-transparent flex flex-col sm:flex-row items-center justify-end mb-4 sticky top-0 z-10 py-2 gap-2">
+            <div className="flex items-center gap-2 bg-gray-900/85 border border-gray-800/60 rounded-xl p-2 w-full sm:w-[60%] md:w-[45%]">
+              <input
+                type="text"
+                placeholder="Search by name, category or address..."
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                className="bg-transparent flex-grow outline-none text-gray-200 placeholder-gray-500 text-sm"
+              />
+              <button
+                onClick={() =>
+                  filterProducts(selectedCategory, priceOrder, nameSearch, products, getActiveLocation())
+                }
+                className="bg-green-700/60 hover:bg-green-600/70 text-white px-3 py-1 rounded-md text-sm transition"
+              >
+                Search
+              </button>
+            </div>
+          </div>
 
           {/* 🧺 Product List */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
@@ -280,8 +295,8 @@ const ExploreProduct = () => {
               ? Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)
               : filteredProducts.length === 0
               ? (
-                <div className="col-span-full flex justify-center mt-20">
-                  <div className="bg-gray-900/40 border border-gray-800/60 px-8 py-5 rounded-2xl backdrop-blur-md">
+                <div className="col-span-full flex justify-center mt-16">
+                  <div className="bg-gray-900/40 border border-gray-800/60 px-6 py-4 rounded-2xl backdrop-blur-md">
                     <h1 className="text-gray-300 text-lg font-medium">No products found</h1>
                   </div>
                 </div>
@@ -289,11 +304,9 @@ const ExploreProduct = () => {
                 filteredProducts.map((product) => (
                   <motion.div
                     key={product.productId}
-
-                    className="bg-gray-950/40 border border-gray-950/40 rounded-2xl p-3
+                    className="w-full bg-gray-950/40 border border-gray-950/40 rounded-2xl p-4
                                backdrop-blur-md hover:bg-green-800/40 transition-all"
                   >
-                    {/* 🖼️ Image with skeleton fallback */}
                     <Suspense fallback={<Skeleton className="w-full h-44 mb-3 rounded-xl" />}>
                       <LazyImage
                         src={
@@ -305,7 +318,6 @@ const ExploreProduct = () => {
                       />
                     </Suspense>
 
-                    {/* 🧾 Info */}
                     <h2 className="text-lg font-semibold text-gray-100 mb-1 tracking-tight">
                       {product.name}
                     </h2>
@@ -323,7 +335,7 @@ const ExploreProduct = () => {
                       {product.available ? `Available: ${product.quantity}` : "Out of Stock"}
                     </p>
 
-                    <div className="flex justify-between mt-4">
+                    <div className="flex flex-col sm:flex-row justify-between mt-4 gap-2 sm:gap-0">
                       <button
                         onClick={() => addProductToCart(product.productId)}
                         disabled={!product.available}

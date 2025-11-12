@@ -173,14 +173,14 @@ const LocationMap = ({ latitude, longitude, onSelect, products = [] }) => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search address or city..."
-          className="flex-1 bg-transparent text-gray-100 px-4 py-2 outline-none placeholder-gray-400"
+          className="flex-1 bg-transparent text-gray-100 px-4 py-2 outline-none placeholder-gray-400 w-1"
         />
         <button
           onClick={handleSearch}
           disabled={loadingSearch}
-          className="px-4 bg-emerald-700 hover:bg-emerald-800 text-white font-medium transition-all"
+          className="px-4 bg-emerald-700 hover:bg-emerald-800 text-white font-medium transition-all w-10"
         >
-          {loadingSearch ? "..." : "Search"}
+          {loadingSearch ? "..." : "🔍︎"}
         </button>
       </div>
 

@@ -4,15 +4,15 @@ function LocationButton({ onClick, active }) {
   return (
     <button
       onClick={onClick}
-      className={`mt-2 flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-medium transition focus:outline-none
+      className={`flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition focus:outline-none
         ${
           active
-            ? "bg-green-900 text-white shadow-lg hover:bg-green-800 border border-green-400"
+            ? "bg-green-900 text-white shadow hover:bg-green-800 border border-green-400"
             : "bg-gray-500 text-black hover:bg-gray-400"
         }`}
     >
-      <FaMapMarkerAlt className="text-lg" />
-      {active ? "🗺Remove Current Location" : "Select Current Location"}
+      <FaMapMarkerAlt className="text-sm" />
+      {active ? "Remove Location" : "Select Location"}
     </button>
   );
 }
